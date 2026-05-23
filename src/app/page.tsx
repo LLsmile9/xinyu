@@ -17,6 +17,8 @@ import {
   BookOpen,
   Download,
   Users,
+  Coffee,
+  X,
 } from 'lucide-react';
 import { toast } from 'sonner';
 // html2canvas removed - using Canvas API for reliable image generation
@@ -454,6 +456,7 @@ export default function Home() {
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
   const [shareImageUri, setShareImageUri] = useState<string | null>(null);
   const [stats, setStats] = useState<Stats | null>(null);
+  const [showTipModal, setShowTipModal] = useState(false);
 
   // Visitor ID (generated once, stored in localStorage)
   const visitorIdRef = useRef<string>('');
@@ -940,6 +943,13 @@ export default function Home() {
                     )}
                   </Button>
                   <Button
+                    onClick={() => setShowTipModal(true)}
+                    className="rounded-full px-6 h-11 sm:h-9 font-light tracking-wider bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 transition-all duration-300 active:scale-95"
+                  >
+                    <Coffee className="w-4 h-4 mr-1.5" />
+                    请我喝杯茶
+                  </Button>
+                  <Button
                     variant="ghost"
                     onClick={() => setView('greeting')}
                     className="text-muted-foreground hover:text-foreground font-light h-11 sm:h-9 active:bg-sage/5"
@@ -1125,6 +1135,57 @@ export default function Home() {
           </AnimatePresence>
         </div>
       </main>
+
+      {/* Tip Modal */}
+      <AnimatePresence>
+        {showTipModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="fixed inset-0 z-[10001] flex items-center justify-center bg-foreground/40 backdrop-blur-sm p-4"
+            onClick={() => setShowTipModal(false)}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              transition={{ duration: 0.3, ease: 'easeOut' }}
+              className="relative bg-background rounded-3xl shadow-xl p-6 max-w-xs w-full"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button
+                onClick={() => setShowTipModal(false)}
+                className="absolute top-3 right-3 p-1 rounded-full hover:bg-muted-foreground/10 transition-colors"
+                aria-label="关闭"
+              >
+                <X className="w-4 h-4 text-muted-foreground" />
+              </button>
+
+              <div className="flex flex-col items-center gap-4 text-center">
+                <Coffee className="w-8 h-8 text-amber-600" />
+                <div>
+                  <h3 className="text-lg font-light text-foreground">请我喝杯茶</h3>
+                  <p className="text-xs text-muted-foreground/60 font-light mt-1">
+                    如果心语温暖了你，可以请我喝杯茶 ☕
+                  </p>
+                </div>
+                <div className="rounded-2xl overflow-hidden border border-amber-100 shadow-sm">
+                  <img
+                    src="/wechat-pay.jpg"
+                    alt="微信收款码"
+                    className="w-52 h-52 object-cover"
+                  />
+                </div>
+                <p className="text-[11px] text-muted-foreground/40 font-light">
+                  微信扫码 · 任意金额 · 感谢你的心意
+                </p>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Footer */}
       <footer className="relative z-10 mt-auto py-4 pb-safe text-center">

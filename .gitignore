@@ -48,3 +48,5 @@ server.sh
 bun.lock
 agent-ctx/
 worklog.md
+start.sh
+watchdog.sh

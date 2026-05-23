@@ -194,7 +194,7 @@
 .dot-pulse > span:nth-child(2) { animation: dotPulse 1.4s ease-in-out infinite; animation-delay: 0.2s; }
 .dot-pulse > span:nth-child(3) { animation: dotPulse 1.4s ease-in-out infinite; animation-delay: 0.4s; }
 
-/* Heart cursor - hide default cursor when active */
+/* Heart cursor - hide default cursor when active (desktop only) */
 .heart-cursor-active {
   cursor: none !important;
 }
@@ -204,6 +204,31 @@
 .heart-cursor-active input,
 .heart-cursor-active textarea {
   cursor: text !important;
+}
+
+/* Disable heart cursor on touch/mobile devices */
+@media (hover: none) and (pointer: coarse) {
+  .heart-cursor-active,
+  .heart-cursor-active * {
+    cursor: auto !important;
+  }
+}
+
+/* Mobile tap highlight removal for cleaner feel */
+@media (hover: none) and (pointer: coarse) {
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
+/* Safe area support */
+@supports (padding: env(safe-area-inset-bottom)) {
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  .pt-safe {
+    padding-top: env(safe-area-inset-top, 0px);
+  }
 }
 
 /* Heart float animation on click */

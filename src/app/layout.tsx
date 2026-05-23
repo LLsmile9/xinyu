@@ -19,6 +19,11 @@ export const metadata: Metadata = {
   icons: {
     icon: "https://z-cdn.chatglm.cn/z-ai/static/logo.svg",
   },
+  viewport: {
+    width: "device-width",
+    initialScale: 1,
+    viewportFit: "cover",
+  },
 };
 
 export default function RootLayout({
@@ -30,6 +35,7 @@ export default function RootLayout({
     <html lang="zh-CN" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground`}
+        style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
       >
         {children}
         <Toaster />

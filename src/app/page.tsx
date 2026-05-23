@@ -506,7 +506,13 @@ export default function Home() {
   const [result, setResult] = useState<{ summary: string; encouragement: string; book: string } | null>(null);
   const [history, setHistory] = useState<CheckInRecord[]>([]);
   const [todayCheckIns, setTodayCheckIns] = useState<CheckInRecord[]>([]);
-  const [showCursor, setShowCursor] = useState(true);
+  const [showCursor, setShowCursor] = useState(() => {
+    if (typeof window !== 'undefined') {
+      // Disable heart cursor by default on touch devices
+      return window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+    }
+    return false;
+  });
 
   // Apply dark mode on mount
   useEffect(() => {
@@ -639,7 +645,7 @@ export default function Home() {
       </div>
 
       {/* Header */}
-      <header className="relative z-10 flex items-center justify-between px-6 py-4 sm:px-8">
+      <header className="relative z-10 flex items-center justify-between px-4 py-3 sm:px-8 sm:py-4 pt-safe">
         <div className="flex items-center gap-2 text-muted-foreground">
           <Leaf className="w-4 h-4 text-sage" />
           <span className="text-sm tracking-widest font-light">心语</span>
@@ -649,34 +655,34 @@ export default function Home() {
             variant="ghost"
             size="icon"
             onClick={() => setShowCursor((p) => !p)}
-            className="rounded-full w-9 h-9 text-muted-foreground hover:text-foreground"
+            className="rounded-full w-10 h-10 sm:w-9 sm:h-9 text-muted-foreground hover:text-foreground active:bg-sage/10"
             aria-label="切换爱心鼠标"
           >
-            <Heart className={`w-4 h-4 ${showCursor ? 'fill-sage/40 text-sage' : ''}`} />
+            <Heart className={`w-4.5 h-4.5 sm:w-4 sm:h-4 ${showCursor ? 'fill-sage/40 text-sage' : ''}`} />
           </Button>
           <Button
             variant="ghost"
             size="icon"
             onClick={handleHistory}
-            className="rounded-full w-9 h-9 text-muted-foreground hover:text-foreground"
+            className="rounded-full w-10 h-10 sm:w-9 sm:h-9 text-muted-foreground hover:text-foreground active:bg-sage/10"
             aria-label="查看历史记录"
           >
-            <History className="w-4 h-4" />
+            <History className="w-4.5 h-4.5 sm:w-4 sm:h-4" />
           </Button>
           <Button
             variant="ghost"
             size="icon"
             onClick={toggleDark}
-            className="rounded-full w-9 h-9 text-muted-foreground hover:text-foreground"
+            className="rounded-full w-10 h-10 sm:w-9 sm:h-9 text-muted-foreground hover:text-foreground active:bg-sage/10"
             aria-label="切换深色模式"
           >
-            {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+            {isDark ? <Sun className="w-4.5 h-4.5 sm:w-4 sm:h-4" /> : <Moon className="w-4.5 h-4.5 sm:w-4 sm:h-4" />}
           </Button>
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="relative z-10 flex-1 flex items-center justify-center px-6 pb-8">
+      <main className="relative z-10 flex-1 flex items-start sm:items-center justify-center px-4 sm:px-6 pb-8 pt-2 sm:pt-0">
         <div className="w-full max-w-md">
           <AnimatePresence mode="wait">
             {/* ======== Greeting View ======== */}
@@ -687,7 +693,7 @@ export default function Home() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ duration: 0.6, ease: 'easeOut' }}
-                className="flex flex-col items-center text-center gap-8"
+                className="flex flex-col items-center text-center gap-6 sm:gap-8"
               >
                 <div className="relative">
                   <div className="absolute inset-0 w-24 h-24 rounded-full bg-sage/10 animate-breathe scale-150" />
@@ -711,7 +717,7 @@ export default function Home() {
 
                 <Button
                   onClick={handleStart}
-                  className="mt-4 rounded-full px-8 py-6 text-base font-light tracking-wider bg-sage hover:bg-sage/90 text-sage-foreground transition-all duration-300 hover:shadow-lg hover:shadow-sage/20"
+                  className="mt-2 sm:mt-4 rounded-full px-8 py-5 sm:py-6 text-base font-light tracking-wider bg-sage hover:bg-sage/90 text-sage-foreground transition-all duration-300 hover:shadow-lg hover:shadow-sage/20 active:scale-95"
                 >
                   {todayCheckIns.length > 0 ? '再聊一次' : '开始今天'}
                   <ChevronRight className="w-4 h-4 ml-1" />
@@ -776,31 +782,31 @@ export default function Home() {
                       className="space-y-8"
                     >
                       <div className="text-center space-y-2">
-                        <h2 className="text-2xl sm:text-3xl font-light text-foreground">
+                        <h2 className="text-xl sm:text-3xl font-light text-foreground leading-snug">
                           {currentQuestions[step].title}
                         </h2>
-                        <p className="text-sm text-muted-foreground font-light">
+                        <p className="text-xs sm:text-sm text-muted-foreground font-light">
                           {currentQuestions[step].subtitle}
                         </p>
                       </div>
 
-                      {/* Option buttons */}
-                      <div className="min-h-[180px] flex items-center justify-center">
-                        <div className="flex flex-wrap justify-center gap-3">
+                      {/* Option buttons - mobile friendly */}
+                      <div className="min-h-[160px] sm:min-h-[180px] flex items-center justify-center">
+                        <div className="grid grid-cols-3 sm:flex sm:flex-wrap justify-center gap-2.5 sm:gap-3 w-full sm:w-auto">
                           {currentQuestions[step].options.map((opt) => (
                             <button
                               key={opt.value}
                               onClick={() =>
                                 setAnswers((a) => ({ ...a, [currentQuestions[step].id]: opt.value }))
                               }
-                              className={`flex flex-col items-center gap-1.5 px-5 py-4 rounded-2xl border transition-all duration-300 cursor-pointer ${
+                              className={`flex flex-col items-center justify-center gap-1.5 py-3.5 sm:py-4 rounded-2xl border transition-all duration-300 cursor-pointer active:scale-95 sm:active:scale-100 min-h-[68px] sm:min-h-0 sm:px-5 ${
                                 answers[currentQuestions[step].id] === opt.value
-                                  ? 'border-sage bg-sage/10 shadow-sm scale-105'
-                                  : 'border-border hover:border-sage/40 hover:bg-sage/5'
+                                  ? 'border-sage bg-sage/10 shadow-sm scale-[1.02] sm:scale-105'
+                                  : 'border-border hover:border-sage/40 hover:bg-sage/5 active:bg-sage/5'
                               }`}
                             >
                               <span className="text-2xl">{opt.display}</span>
-                              <span className="text-xs font-light text-muted-foreground whitespace-nowrap">
+                              <span className="text-[11px] sm:text-xs font-light text-muted-foreground whitespace-nowrap">
                                 {opt.value}
                               </span>
                             </button>
@@ -811,15 +817,15 @@ export default function Home() {
                   )}
                 </AnimatePresence>
 
-                {/* Navigation */}
-                <div className="flex justify-between items-center pt-4">
+                {/* Navigation - mobile friendly */}
+                <div className="flex justify-between items-center pt-2 sm:pt-4">
                   <Button
                     variant="ghost"
                     onClick={() => {
                       if (step > 0) setStep((s) => s - 1);
                       else setView('greeting');
                     }}
-                    className="text-muted-foreground hover:text-foreground font-light"
+                    className="text-muted-foreground hover:text-foreground font-light h-11 sm:h-9 active:bg-sage/5"
                   >
                     <ArrowLeft className="w-4 h-4 mr-1" />
                     {step > 0 ? '上一步' : '返回'}
@@ -828,7 +834,7 @@ export default function Home() {
                   <Button
                     onClick={handleNext}
                     disabled={!canProceed()}
-                    className="rounded-full px-6 font-light tracking-wider bg-sage hover:bg-sage/90 text-sage-foreground disabled:opacity-30 disabled:hover:bg-sage transition-all duration-300"
+                    className="rounded-full px-6 h-11 sm:h-9 font-light tracking-wider bg-sage hover:bg-sage/90 text-sage-foreground disabled:opacity-30 disabled:hover:bg-sage transition-all duration-300 active:scale-95"
                   >
                     {step === currentQuestions.length - 1 ? '静候心语' : '下一步'}
                     <ChevronRight className="w-4 h-4 ml-1" />
@@ -872,7 +878,7 @@ export default function Home() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ duration: 0.8, ease: 'easeOut' }}
-                className="flex flex-col items-center text-center gap-8 py-4"
+                className="flex flex-col items-center text-center gap-6 sm:gap-8 py-2 sm:py-4"
               >
                 {/* Date & time */}
                 <div className="space-y-1">
@@ -898,7 +904,7 @@ export default function Home() {
                     <Leaf className="w-3.5 h-3.5 text-sage/40" />
                     <div className="w-8 h-px bg-sage/30" />
                   </div>
-                  <p className="text-2xl sm:text-3xl font-light text-foreground leading-relaxed tracking-wide max-w-xs">
+                  <p className="text-xl sm:text-3xl font-light text-foreground leading-relaxed tracking-wide max-w-xs">
                     {result.summary}
                   </p>
                   <div className="flex items-center gap-4 justify-center">
@@ -920,7 +926,7 @@ export default function Home() {
                     <span className="text-xs tracking-widest font-light">给你的话</span>
                     <Heart className="w-3.5 h-3.5" />
                   </div>
-                  <p className="text-base font-light text-muted-foreground leading-relaxed">
+                  <p className="text-sm sm:text-base font-light text-muted-foreground leading-relaxed">
                     {result.encouragement}
                   </p>
 
@@ -971,7 +977,7 @@ export default function Home() {
                 >
                   <Button
                     onClick={handleStart}
-                    className="rounded-full px-6 font-light tracking-wider bg-sage/80 hover:bg-sage text-sage-foreground transition-all duration-300"
+                    className="rounded-full px-6 h-11 sm:h-9 font-light tracking-wider bg-sage/80 hover:bg-sage text-sage-foreground transition-all duration-300 active:scale-95"
                   >
                     再聊一次
                     <ChevronRight className="w-4 h-4 ml-1" />
@@ -979,7 +985,7 @@ export default function Home() {
                   <Button
                     variant="ghost"
                     onClick={() => setView('greeting')}
-                    className="text-muted-foreground hover:text-foreground font-light"
+                    className="text-muted-foreground hover:text-foreground font-light h-11 sm:h-9 active:bg-sage/5"
                   >
                     <ArrowLeft className="w-4 h-4 mr-1" />
                     返回
@@ -1073,7 +1079,7 @@ export default function Home() {
       </main>
 
       {/* Footer */}
-      <footer className="relative z-10 mt-auto py-4 text-center">
+      <footer className="relative z-10 mt-auto py-4 pb-safe text-center">
         <p className="text-xs font-light text-muted-foreground/40 tracking-wider">
           温柔地对待每一刻
         </p>

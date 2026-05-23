@@ -56,3 +56,25 @@ Stage Summary:
 - AI now receives full history of past encouragements/books
 - Prompt explicitly tells AI to avoid repeating philosophers from past check-ins
 - With 50 philosophers in the list, 30+ unique check-ins are guaranteed
+
+---
+Task ID: 4
+Agent: Main Agent
+Task: Expand question pool to 30 per sub-category (180 total) with per-category non-repeat tracking
+
+Work Log:
+- Created new file `src/lib/questions.ts` with 180 questions across 6 categories
+- Categories: 色彩(30), 自然(30), 象征(30), 感知(30), 阴影(30), 灵性(30)
+- Each category has exactly 30 unique questions with 4 options each
+- Restructured pickRandomQuestions to pick 1 question from each of 5 random categories per session
+- Per-category localStorage tracking (key: xinyu_used_questions_v2)
+- When all 30 questions in a category are used, that category resets
+- Each session gets 5 questions from 5 different categories → 30 non-repeat sessions guaranteed
+- Removed old QUESTION_POOL from page.tsx, imported from new file
+- Lint passes, page loads (HTTP 200)
+
+Stage Summary:
+- Question pool: 31 → 180 questions (6 categories × 30 each)
+- Per-category non-repeat: each sub-category cycles through 30 unique questions
+- 30 sessions × 5 questions = 150 unique questions before any repeat
+- Questions extracted to `src/lib/questions.ts` for maintainability

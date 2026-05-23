@@ -21,25 +21,6 @@ import { toast } from 'sonner';
 
 // ============ Types ============
 type AppView = 'greeting' | 'questions' | 'generating' | 'result' | 'history';
-type QuestionType = 'color' | 'element' | 'tarot' | 'season' | 'landscape' | 'metaphor' | 'shadow' | 'body' | 'animal' | 'texture';
-
-interface QuestionOption {
-  value: string;
-  display: string; // emoji
-}
-
-interface Question {
-  id: string;
-  title: string;
-  subtitle: string;
-  type: QuestionType;
-  options: QuestionOption[];
-}
-
-interface AnswerPair {
-  question: string;
-  answer: string;
-}
 
 interface CheckInRecord {
   id: string;
@@ -52,510 +33,84 @@ interface CheckInRecord {
   createdAt: string;
 }
 
-// ============ Question Pool (30+ questions for 6 rounds of 5 without repeat) ============
-const QUESTION_POOL: Question[] = [
-  // ---- Color psychology (4) ----
-  {
-    id: 'color-mood',
-    title: '此刻你的内心是什么颜色？',
-    subtitle: '闭上眼，感受那个颜色',
-    type: 'color',
-    options: [
-      { value: '深蓝', display: '🔵' },
-      { value: '暖橙', display: '🟠' },
-      { value: '嫩绿', display: '🟢' },
-      { value: '浅紫', display: '🟣' },
-      { value: '灰白', display: '⚪' },
-      { value: '深红', display: '🔴' },
-    ],
-  },
-  {
-    id: 'color-need',
-    title: '你现在最需要的颜色是？',
-    subtitle: '直觉选择，不要思考',
-    type: 'color',
-    options: [
-      { value: '金色', display: '🟡' },
-      { value: '湖蓝', display: '💎' },
-      { value: '翠绿', display: '🌿' },
-      { value: '粉红', display: '💗' },
-      { value: '银灰', display: '🪞' },
-      { value: '赤红', display: '🔥' },
-    ],
-  },
-  {
-    id: 'color-fade',
-    title: '如果今天是一种渐变色，它的走向是？',
-    subtitle: '感受色彩的流动',
-    type: 'color',
-    options: [
-      { value: '暖到冷', display: '🌅➡️🌊' },
-      { value: '暗到明', display: '🌑➡️☀️' },
-      { value: '灰到彩', display: '🌫️➡️🌈' },
-      { value: '明到暗', display: '☀️➡️🌑' },
-      { value: '彩到白', display: '🌈➡️⬜' },
-      { value: '冷到暖', display: '❄️➡️🔥' },
-    ],
-  },
-  {
-    id: 'color-light',
-    title: '你此刻需要什么光？',
-    subtitle: '光也有颜色',
-    type: 'color',
-    options: [
-      { value: '烛光', display: '🕯️' },
-      { value: '晨曦', display: '🌅' },
-      { value: '月光', display: '🌙' },
-      { value: '霓虹', display: '💜' },
-      { value: '炉火', display: '🪵' },
-      { value: '极光', display: '💚' },
-    ],
-  },
-  // ---- Tarot / Symbol (4) ----
-  {
-    id: 'tarot-card',
-    title: '如果抽一张灵魂牌，它会是？',
-    subtitle: '凭直觉选择',
-    type: 'tarot',
-    options: [
-      { value: '月亮', display: '🌙' },
-      { value: '星星', display: '⭐' },
-      { value: '塔', display: '🗼' },
-      { value: '太阳', display: '☀️' },
-      { value: '隐者', display: '🧙' },
-      { value: '愚者', display: '🃏' },
-    ],
-  },
-  {
-    id: 'tarot-journey',
-    title: '你觉得自己正站在哪扇门前？',
-    subtitle: '想象那扇门的模样',
-    type: 'tarot',
-    options: [
-      { value: '半开', display: '🚪' },
-      { value: '紧闭', display: '🔒' },
-      { value: '敞开', display: '🏛️' },
-      { value: '隐形', display: '✨' },
-      { value: '旋转', display: '🌀' },
-      { value: '画中', display: '🖼️' },
-    ],
-  },
-  {
-    id: 'tarot-object',
-    title: '如果此刻手中握着一件信物？',
-    subtitle: '它代表你现在的状态',
-    type: 'tarot',
-    options: [
-      { value: '钥匙', display: '🔑' },
-      { value: '镜子', display: '🪞' },
-      { value: '罗盘', display: '🧭' },
-      { value: '羽毛', display: '🪶' },
-      { value: '沙漏', display: '⏳' },
-      { value: '种子', display: '🌰' },
-    ],
-  },
-  {
-    id: 'tarot-path',
-    title: '你面前出现了几条路？',
-    subtitle: '想象那个路口',
-    type: 'tarot',
-    options: [
-      { value: '直行', display: '⬆️' },
-      { value: '岔路', display: '🔀' },
-      { value: '回旋', display: '🔄' },
-      { value: '断桥', display: '🌉' },
-      { value: '暗道', display: '🕳️' },
-      { value: '天梯', display: '🪜' },
-    ],
-  },
-  // ---- Nature element (4) ----
-  {
-    id: 'element-soul',
-    title: '你的灵魂此刻更接近哪种元素？',
-    subtitle: '感受你内在的流动',
-    type: 'element',
-    options: [
-      { value: '水', display: '💧' },
-      { value: '火', display: '🔥' },
-      { value: '风', display: '🌬️' },
-      { value: '土', display: '🪨' },
-    ],
-  },
-  {
-    id: 'element-need',
-    title: '此刻你最缺少哪种力量？',
-    subtitle: '诚实面对匮乏',
-    type: 'element',
-    options: [
-      { value: '温柔', display: '🌊' },
-      { value: '勇气', display: '🔥' },
-      { value: '轻盈', display: '🍃' },
-      { value: '安定', display: '🏔️' },
-    ],
-  },
-  {
-    id: 'element-nature',
-    title: '如果此刻你是一种自然现象？',
-    subtitle: '不是天气，是更大的力量',
-    type: 'element',
-    options: [
-      { value: '潮汐', display: '🌊' },
-      { value: '地震', display: '💥' },
-      { value: '花开', display: '🌸' },
-      { value: '落叶', display: '🍂' },
-      { value: '融雪', display: '🫠' },
-      { value: '星坠', display: '☄️' },
-    ],
-  },
-  {
-    id: 'element-grow',
-    title: '你现在更像植物的哪个部分？',
-    subtitle: '感受你成长的状态',
-    type: 'element',
-    options: [
-      { value: '根', display: '🫚' },
-      { value: '茎', display: '🌿' },
-      { value: '叶', display: '🍃' },
-      { value: '花', display: '🌺' },
-      { value: '果', display: '🍎' },
-      { value: '种子', display: '🫘' },
-    ],
-  },
-  // ---- Season / Time (4) ----
-  {
-    id: 'season-soul',
-    title: '你的内心正处在什么季节？',
-    subtitle: '不是外面的季节',
-    type: 'season',
-    options: [
-      { value: '初春', display: '🌱' },
-      { value: '盛夏', display: '🌻' },
-      { value: '深秋', display: '🍂' },
-      { value: '寒冬', display: '❄️' },
-    ],
-  },
-  {
-    id: 'time-day',
-    title: '如果此刻是一天中的某个时辰？',
-    subtitle: '不是现在几点',
-    type: 'season',
-    options: [
-      { value: '黎明', display: '🌅' },
-      { value: '正午', display: '🌤️' },
-      { value: '黄昏', display: '🌇' },
-      { value: '深夜', display: '🌑' },
-    ],
-  },
-  {
-    id: 'season-rain',
-    title: '此刻你的内心是什么温度？',
-    subtitle: '不是体温，是心的温度',
-    type: 'season',
-    options: [
-      { value: '冰冷', display: '🧊' },
-      { value: '微凉', display: '🎐' },
-      { value: '温暖', display: '🫖' },
-      { value: '灼热', display: '🔥' },
-    ],
-  },
-  {
-    id: 'season-memory',
-    title: '你最想回到哪个年龄的午后？',
-    subtitle: '那个午后在做什么',
-    type: 'season',
-    options: [
-      { value: '童年', display: '🧒' },
-      { value: '少年', display: '🎒' },
-      { value: '青年', display: '🎓' },
-      { value: '此刻', display: '🪞' },
-    ],
-  },
-  // ---- Landscape (3) ----
-  {
-    id: 'landscape-place',
-    title: '你最想待在什么样的地方？',
-    subtitle: '想象那个画面',
-    type: 'landscape',
-    options: [
-      { value: '海边', display: '🏖️' },
-      { value: '森林', display: '🌲' },
-      { value: '山顶', display: '⛰️' },
-      { value: '小屋', display: '🏡' },
-      { value: '雨中', display: '🌧️' },
-      { value: '星空下', display: '🌌' },
-    ],
-  },
-  {
-    id: 'landscape-window',
-    title: '透过一扇窗，你看到了什么？',
-    subtitle: '那扇窗框住了什么',
-    type: 'landscape',
-    options: [
-      { value: '大海', display: '🌊' },
-      { value: '雪原', display: '🏔️' },
-      { value: '花园', display: '🌷' },
-      { value: '城市', display: '🏙️' },
-      { value: '荒野', display: '🏜️' },
-      { value: '自画像', display: '🪞' },
-    ],
-  },
-  {
-    id: 'landscape-bridge',
-    title: '你正站在一座桥上，桥下是？',
-    subtitle: '桥连接着两个世界',
-    type: 'landscape',
-    options: [
-      { value: '河流', display: '🏞️' },
-      { value: '深渊', display: '🕳️' },
-      { value: '云海', display: '☁️' },
-      { value: '花田', display: '🌾' },
-      { value: '迷雾', display: '🌫️' },
-      { value: '星空', display: '✨' },
-    ],
-  },
-  // ---- Shadow (3) ----
-  {
-    id: 'shadow-self',
-    title: '此刻你最想逃避的是？',
-    subtitle: '选择最接近的感受',
-    type: 'shadow',
-    options: [
-      { value: '喧嚣', display: '📢' },
-      { value: '期待', display: '🎯' },
-      { value: '责任', display: '⚖️' },
-      { value: '独处', display: '🚶' },
-      { value: '选择', display: '🔀' },
-      { value: '沉默', display: '🤐' },
-    ],
-  },
-  {
-    id: 'shadow-fear',
-    title: '此刻最让你不安的是？',
-    subtitle: '选一个最贴近的',
-    type: 'shadow',
-    options: [
-      { value: '未知', display: '❓' },
-      { value: '失去', display: '💔' },
-      { value: '停滞', display: '🫥' },
-      { value: '评判', display: '👁️' },
-      { value: '孤独', display: '🌫️' },
-      { value: '改变', display: '🌀' },
-    ],
-  },
-  {
-    id: 'shadow-mask',
-    title: '今天你戴的是哪副面具？',
-    subtitle: '我们都戴着面具生活',
-    type: 'shadow',
-    options: [
-      { value: '微笑', display: '😊' },
-      { value: '坚强', display: '🛡️' },
-      { value: '无所谓', display: '😑' },
-      { value: '忙碌', display: '🏃' },
-      { value: '从容', display: '🧘' },
-      { value: '没戴', display: '🫥' },
-    ],
-  },
-  // ---- Metaphor (3) ----
-  {
-    id: 'metaphor-weather',
-    title: '你的心情像什么天气？',
-    subtitle: '用天气描绘内心',
-    type: 'metaphor',
-    options: [
-      { value: '晴天', display: '☀️' },
-      { value: '多云', display: '⛅' },
-      { value: '小雨', display: '🌦️' },
-      { value: '雷暴', display: '⛈️' },
-      { value: '薄雾', display: '🌫️' },
-      { value: '彩虹', display: '🌈' },
-    ],
-  },
-  {
-    id: 'metaphor-music',
-    title: '如果心情是一首音乐，它的节奏是？',
-    subtitle: '感受你内心的律动',
-    type: 'metaphor',
-    options: [
-      { value: '低沉', display: '🎵' },
-      { value: '轻快', display: '🎶' },
-      { value: '激烈', display: '🥁' },
-      { value: '安静', display: '🤫' },
-      { value: '悠远', display: '🎻' },
-    ],
-  },
-  {
-    id: 'metaphor-water',
-    title: '你的情绪此刻是什么形态的水？',
-    subtitle: '水会随容器改变',
-    type: 'metaphor',
-    options: [
-      { value: '溪流', display: '🏞️' },
-      { value: '深海', display: '🌊' },
-      { value: '冰面', display: '🧊' },
-      { value: '蒸汽', display: '💨' },
-      { value: '雨滴', display: '💧' },
-      { value: '瀑布', display: '🌊' },
-    ],
-  },
-  // ---- Body sensation (2) ----
-  {
-    id: 'body-sense',
-    title: '你的身体此刻最想做什么？',
-    subtitle: '倾听身体的信号',
-    type: 'body',
-    options: [
-      { value: '蜷缩', display: '🧘' },
-      { value: '奔跑', display: '🏃' },
-      { value: '漂浮', display: '🫧' },
-      { value: '拥抱', display: '🤗' },
-      { value: '深呼吸', display: '💨' },
-      { value: '沉睡', display: '😴' },
-    ],
-  },
-  {
-    id: 'body-weight',
-    title: '此刻你的心感觉有多重？',
-    subtitle: '心的重量无法称量',
-    type: 'body',
-    options: [
-      { value: '羽毛', display: '🪶' },
-      { value: '石头', display: '🪨' },
-      { value: '水滴', display: '💧' },
-      { value: '铅块', display: '🧱' },
-      { value: '气球', display: '🎈' },
-      { value: '沙袋', display: '👝' },
-    ],
-  },
-  // ---- Animal spirit (2) ----
-  {
-    id: 'animal-spirit',
-    title: '如果此刻变成一种动物？',
-    subtitle: '直觉选择',
-    type: 'animal',
-    options: [
-      { value: '猫', display: '🐱' },
-      { value: '鸟', display: '🐦' },
-      { value: '鱼', display: '🐟' },
-      { value: '鹿', display: '🦌' },
-      { value: '熊', display: '🐻' },
-      { value: '蝴蝶', display: '🦋' },
-    ],
-  },
-  {
-    id: 'animal-move',
-    title: '此刻你最想以什么方式移动？',
-    subtitle: '移动方式反映内心节奏',
-    type: 'animal',
-    options: [
-      { value: '飞翔', display: '🦅' },
-      { value: '游泳', display: '🐬' },
-      { value: '漫步', display: '🐢' },
-      { value: '奔跑', display: '🐎' },
-      { value: '攀爬', display: '🐒' },
-      { value: '蜷伏', display: '🐛' },
-    ],
-  },
-  // ---- Texture (2) ----
-  {
-    id: 'texture-feel',
-    title: '此刻你最想触摸的质感？',
-    subtitle: '用触觉感知情绪',
-    type: 'texture',
-    options: [
-      { value: '毛毯', display: '🧶' },
-      { value: '石面', display: '🪨' },
-      { value: '水流', display: '💧' },
-      { value: '树皮', display: '🌳' },
-      { value: '丝绸', display: '🎀' },
-      { value: '沙粒', display: '🏜️' },
-    ],
-  },
-  {
-    id: 'texture-taste',
-    title: '此刻你的心情是什么味道？',
-    subtitle: '用味觉感知情绪',
-    type: 'texture',
-    options: [
-      { value: '甘甜', display: '🍯' },
-      { value: '微苦', display: '☕' },
-      { value: '辛辣', display: '🌶️' },
-      { value: '清淡', display: '🍵' },
-      { value: '酸涩', display: '🍋' },
-      { value: '回甘', display: '🌿' },
-    ],
-  },
-];
+// ============ Import Questions ============
+import QUESTION_POOL, { QUESTION_CATEGORIES, type QuestionType, type Question } from '@/lib/questions';
 
-// ============ Non-repeat question tracking ============
-const USED_QUESTIONS_KEY = 'xinyu_used_questions';
+// ============ Answer pair type ============
+interface AnswerPair {
+  question: string;
+  answer: string;
+}
 
-function getUsedQuestionIds(): string[] {
+// ============ Per-category non-repeat tracking ============
+const USED_QUESTIONS_KEY = 'xinyu_used_questions_v2';
+
+type UsedMap = Record<string, string[]>; // category -> list of used question IDs
+
+function getUsedMap(): UsedMap {
   try {
     const stored = localStorage.getItem(USED_QUESTIONS_KEY);
-    return stored ? JSON.parse(stored) : [];
+    return stored ? JSON.parse(stored) : {};
   } catch {
-    return [];
+    return {};
   }
 }
 
-function saveUsedQuestionIds(ids: string[]): void {
+function saveUsedMap(map: UsedMap): void {
   try {
-    localStorage.setItem(USED_QUESTIONS_KEY, JSON.stringify(ids));
+    localStorage.setItem(USED_QUESTIONS_KEY, JSON.stringify(map));
   } catch {
     // Silently fail
   }
 }
 
-// Pick N questions avoiding recently used ones, with type diversity
+// Pick `count` questions, one from each of `count` different categories, avoiding repeats
 function pickRandomQuestions(count: number): Question[] {
-  const usedIds = getUsedQuestionIds();
-  const usedSet = new Set(usedIds);
-
-  // Separate into unused and used pools
-  const unused = QUESTION_POOL.filter((q) => !usedSet.has(q.id));
-  const used = QUESTION_POOL.filter((q) => usedSet.has(q.id));
-
-  // If we have enough unused questions, prefer them
-  let candidates: Question[];
-  if (unused.length >= count) {
-    candidates = [...unused].sort(() => Math.random() - 0.5);
-  } else {
-    // Not enough unused — use all unused + fill from used (oldest first)
-    candidates = [
-      ...unused.sort(() => Math.random() - 0.5),
-      ...used.sort(() => Math.random() - 0.5),
-    ];
-  }
-
-  // Pick with type diversity
+  const usedMap = getUsedMap();
   const picked: Question[] = [];
-  const usedTypes = new Set<string>();
+  const usedCategories = new Set<QuestionType>();
 
-  // First pass: ensure type diversity
-  for (const q of candidates) {
+  // Shuffle categories for variety
+  const shuffledCategories = [...QUESTION_CATEGORIES].sort(() => Math.random() - 0.5);
+
+  for (const cat of shuffledCategories) {
     if (picked.length >= count) break;
-    const typeKey = q.type;
-    if (!usedTypes.has(typeKey)) {
+    if (usedCategories.has(cat)) continue;
+
+    const usedIds = new Set(usedMap[cat] || []);
+    const poolQuestions = QUESTION_POOL.filter((q) => q.type === cat);
+    const unused = poolQuestions.filter((q) => !usedIds.has(q.id));
+
+    let question: Question;
+    if (unused.length > 0) {
+      // Pick a random unused question from this category
+      question = unused[Math.floor(Math.random() * unused.length)];
+    } else {
+      // All questions in this category have been used — reset this category
+      question = poolQuestions[Math.floor(Math.random() * poolQuestions.length)];
+      usedMap[cat] = []; // Reset tracking for this category
+    }
+
+    picked.push(question);
+    usedCategories.add(cat);
+
+    // Track the used ID
+    if (!usedMap[cat]) usedMap[cat] = [];
+    usedMap[cat].push(question.id);
+  }
+
+  // If we still need more questions (edge case: fewer categories than count)
+  if (picked.length < count) {
+    const remaining = QUESTION_POOL.filter((q) => !picked.includes(q));
+    const shuffled = remaining.sort(() => Math.random() - 0.5);
+    for (const q of shuffled) {
+      if (picked.length >= count) break;
       picked.push(q);
-      usedTypes.add(typeKey);
     }
   }
 
-  // Second pass: fill remaining with any
-  for (const q of candidates) {
-    if (picked.length >= count) break;
-    if (!picked.includes(q)) {
-      picked.push(q);
-    }
-  }
-
-  // Save used IDs (append new ones, keep last 25 for rotation)
-  const newUsedIds = [...usedIds, ...picked.map((q) => q.id)];
-  // Keep last 25 IDs so questions rotate after ~5 rounds
-  saveUsedQuestionIds(newUsedIds.slice(-25));
-
-  return picked.slice(0, count);
+  saveUsedMap(usedMap);
+  return picked;
 }
 
 // ============ Helper ============

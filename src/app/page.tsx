@@ -18,7 +18,7 @@ import {
   Download,
 } from 'lucide-react';
 import { toast } from 'sonner';
-import html2canvas from 'html2canvas';
+// html2canvas removed - using Canvas API for reliable image generation
 
 // ============ Types ============
 type AppView = 'greeting' | 'questions' | 'generating' | 'result' | 'history';
@@ -225,94 +225,186 @@ function HeartCursor() {
 
 
 
-// ============ Share Card Content (pure inline styles for html2canvas) ============
-function ShareCardContent({ result, weekday }: {
-  result: { summary: string; encouragement: string; book: string };
-  weekday: string;
-}) {
-  return (
-    <>
-      {/* Top decorative line */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, marginBottom: 32 }}>
-        <div style={{ width: 40, height: 1, background: 'rgba(124, 154, 142, 0.3)' }} />
-        <span style={{ fontSize: 12, color: 'rgba(124, 154, 142, 0.5)', letterSpacing: 4 }}>晨间心语</span>
-        <div style={{ width: 40, height: 1, background: 'rgba(124, 154, 142, 0.3)' }} />
-      </div>
+// ============ Canvas-based Share Image Generator ============
+async function generateShareImage(
+  result: { summary: string; encouragement: string; book: string },
+  weekday: string
+): Promise<string> {
+  // Wait for fonts to load
+  await document.fonts.ready;
 
-      {/* Weekday */}
-      <p style={{ fontSize: 13, color: 'rgba(124, 154, 142, 0.6)', textAlign: 'center', letterSpacing: 3, marginBottom: 28 }}>
-        {weekday}
-      </p>
+  const DPR = 2;
+  const W = 360; // card width in CSS px
+  const PAD = 40; // padding in CSS px
+  const CW = W - PAD * 2; // content width
 
-      {/* Summary */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, marginBottom: 20 }}>
-        <div style={{ width: 28, height: 1, background: 'rgba(124, 154, 142, 0.25)' }} />
-        <span style={{ fontSize: 10, color: 'rgba(124, 154, 142, 0.4)' }}>🌿</span>
-        <div style={{ width: 28, height: 1, background: 'rgba(124, 154, 142, 0.25)' }} />
-      </div>
-      <p style={{
-        fontSize: 15,
-        color: 'rgba(80, 80, 80, 0.75)',
-        textAlign: 'center',
-        lineHeight: 1.8,
-        letterSpacing: 1,
-        fontWeight: 300,
-        marginBottom: 24,
-        maxWidth: 280,
-        marginLeft: 'auto',
-        marginRight: 'auto',
-      }}>
-        {result.summary}
-      </p>
+  // Get the actual serif font from CSS variable
+  const serifVar = getComputedStyle(document.documentElement).getPropertyValue('--font-serif').trim();
+  const FF = serifVar ? `'${serifVar}', serif` : '"Noto Serif SC", serif';
 
-      {/* Divider */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, marginBottom: 28 }}>
-        <div style={{ width: 28, height: 1, background: 'rgba(124, 154, 142, 0.25)' }} />
-        <span style={{ fontSize: 10, color: 'rgba(124, 154, 142, 0.4)' }}>🌿</span>
-        <div style={{ width: 28, height: 1, background: 'rgba(124, 154, 142, 0.25)' }} />
-      </div>
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d')!;
 
-      {/* Encouragement label */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 16 }}>
-        <span style={{ fontSize: 11, color: 'rgba(124, 154, 142, 0.6)' }}>💚</span>
-        <span style={{ fontSize: 12, color: 'rgba(124, 154, 142, 0.7)', letterSpacing: 4, fontWeight: 300 }}>给你的话</span>
-        <span style={{ fontSize: 11, color: 'rgba(124, 154, 142, 0.6)' }}>💚</span>
-      </div>
+  // Font helper
+  const setFont = (size: number, weight = '300') => {
+    ctx.font = `${weight} ${size * DPR}px ${FF}`;
+  };
 
-      {/* Encouragement */}
-      <p style={{
-        fontSize: 20,
-        color: 'rgba(40, 40, 40, 0.9)',
-        textAlign: 'center',
-        lineHeight: 1.8,
-        fontWeight: 300,
-        letterSpacing: 1,
-        marginBottom: 20,
-        maxWidth: 300,
-        marginLeft: 'auto',
-        marginRight: 'auto',
-      }}>
-        {result.encouragement}
-      </p>
+  // Chinese text wrapping → returns array of lines
+  function wrapText(text: string, maxPx: number, fontSize: number, fontWeight = '300'): string[] {
+    setFont(fontSize, fontWeight);
+    const lines: string[] = [];
+    let line = '';
+    for (const char of text) {
+      if (char === '\n') { lines.push(line); line = ''; continue; }
+      const test = line + char;
+      if (ctx.measureText(test).width > maxPx && line) {
+        lines.push(line);
+        line = char;
+      } else {
+        line = test;
+      }
+    }
+    if (line) lines.push(line);
+    return lines;
+  }
 
-      {/* Book */}
-      {result.book && (
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, marginBottom: 36 }}>
-          <span style={{ fontSize: 10, color: 'rgba(124, 154, 142, 0.35)' }}>📖</span>
-          <p style={{ fontSize: 11, color: 'rgba(124, 154, 142, 0.45)', fontStyle: 'italic', letterSpacing: 1 }}>
-            {result.book}
-          </p>
-        </div>
-      )}
+  // --- First pass: measure to get total height ---
+  const sLines = wrapText(result.summary, (CW - 20) * DPR, 15);
+  const eLines = wrapText(result.encouragement, (CW - 10) * DPR, 20);
 
-      {/* Bottom branding */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, marginTop: 8 }}>
-        <div style={{ width: 60, height: 1, background: 'rgba(124, 154, 142, 0.2)' }} />
-        <span style={{ fontSize: 10, color: 'rgba(124, 154, 142, 0.35)', letterSpacing: 3 }}>温柔地对待每一刻</span>
-        <div style={{ width: 60, height: 1, background: 'rgba(124, 154, 142, 0.2)' }} />
-      </div>
-    </>
-  );
+  const SECTION_GAP = 28; // gap between major sections
+  let totalH = PAD; // top padding
+  totalH += 32; // top branding area
+  totalH += SECTION_GAP;
+  totalH += 18; // weekday
+  totalH += SECTION_GAP;
+  totalH += 24; // divider
+  totalH += 20; // gap
+  totalH += sLines.length * 28; // summary lines
+  totalH += SECTION_GAP;
+  totalH += 24; // divider
+  totalH += SECTION_GAP;
+  totalH += 22; // label
+  totalH += 20; // gap
+  totalH += eLines.length * 38; // encouragement lines
+  totalH += 20; // gap
+  if (result.book) totalH += 22;
+  totalH += 40; // bottom branding area
+  totalH += PAD; // bottom padding
+
+  canvas.width = W * DPR;
+  canvas.height = totalH * DPR;
+
+  // --- Draw background with rounded corners ---
+  const R = 16 * DPR;
+  ctx.fillStyle = '#FAF8F5';
+  ctx.beginPath();
+  ctx.moveTo(R, 0);
+  ctx.lineTo(canvas.width - R, 0);
+  ctx.quadraticCurveTo(canvas.width, 0, canvas.width, R);
+  ctx.lineTo(canvas.width, canvas.height - R);
+  ctx.quadraticCurveTo(canvas.width, canvas.height, canvas.width - R, canvas.height);
+  ctx.lineTo(R, canvas.height);
+  ctx.quadraticCurveTo(0, canvas.height, 0, canvas.height - R);
+  ctx.lineTo(0, R);
+  ctx.quadraticCurveTo(0, 0, R, 0);
+  ctx.closePath();
+  ctx.fill();
+
+  // --- Helper functions ---
+  ctx.textBaseline = 'top';
+  ctx.textAlign = 'left';
+
+  function drawCenteredText(text: string, y: number) {
+    const w = ctx.measureText(text).width;
+    ctx.fillText(text, (canvas.width - w) / 2, y);
+  }
+
+  // Draw decorative line-text-line pattern, all vertically centered at y
+  function drawLineTextLine(text: string, y: number, fontSize: number, color: string, lineW: number, lineColor = 'rgba(124,154,142,0.25)') {
+    setFont(fontSize);
+    const textW = ctx.measureText(text).width;
+    const gap = 12 * DPR;
+    const linePx = lineW * DPR;
+    const totalW = linePx * 2 + gap * 2 + textW;
+    const sx = (canvas.width - totalW) / 2;
+    const textY = y;
+    const lineY = y + fontSize * DPR * 0.4; // vertically center line with text
+
+    // Left line
+    ctx.fillStyle = lineColor;
+    ctx.fillRect(sx, lineY, linePx, DPR);
+    // Right line
+    ctx.fillRect(sx + linePx + gap * 2 + textW, lineY, linePx, DPR);
+    // Text
+    ctx.fillStyle = color;
+    ctx.fillText(text, sx + linePx + gap, textY);
+  }
+
+  // --- Second pass: draw content ---
+  let y = PAD * DPR;
+
+  // Top branding: —— 晨间心语 ——
+  drawLineTextLine('晨  间  心  语', y, 12, 'rgba(124,154,142,0.5)', 40);
+  y += 32 * DPR;
+
+  // Weekday
+  y += SECTION_GAP * DPR;
+  setFont(13);
+  ctx.fillStyle = 'rgba(124,154,142,0.6)';
+  drawCenteredText(weekday, y);
+  y += 18 * DPR;
+
+  // Divider 1
+  y += SECTION_GAP * DPR;
+  drawLineTextLine('·  ·  ·', y, 8, 'rgba(124,154,142,0.35)', 28, 'rgba(124,154,142,0.2)');
+  y += 24 * DPR;
+
+  // Summary
+  y += 20 * DPR;
+  setFont(15, '300');
+  ctx.fillStyle = 'rgba(80,80,80,0.75)';
+  for (const line of sLines) {
+    drawCenteredText(line, y);
+    y += 28 * DPR;
+  }
+
+  // Divider 2
+  y += SECTION_GAP * DPR;
+  drawLineTextLine('·  ·  ·', y, 8, 'rgba(124,154,142,0.35)', 28, 'rgba(124,154,142,0.2)');
+  y += 24 * DPR;
+
+  // "给你的话" label
+  y += SECTION_GAP * DPR;
+  setFont(12, '300');
+  ctx.fillStyle = 'rgba(124,154,142,0.7)';
+  drawCenteredText('♡  给你的话  ♡', y);
+  y += 22 * DPR;
+
+  // Encouragement
+  y += 20 * DPR;
+  setFont(20, '300');
+  ctx.fillStyle = 'rgba(40,40,40,0.9)';
+  for (const line of eLines) {
+    drawCenteredText(line, y);
+    y += 38 * DPR;
+  }
+
+  // Book
+  y += 20 * DPR;
+  if (result.book) {
+    setFont(11, '300');
+    ctx.fillStyle = 'rgba(124,154,142,0.45)';
+    drawCenteredText(result.book, y);
+    y += 22 * DPR;
+  }
+
+  // Bottom branding
+  y += 40 * DPR - 12 * DPR; // gap before branding
+  drawLineTextLine('温柔地对待每一刻', y, 10, 'rgba(124,154,142,0.35)', 60, 'rgba(124,154,142,0.15)');
+
+  return canvas.toDataURL('image/png');
 }
 
 // ============ Main Component ============
@@ -335,10 +427,8 @@ export default function Home() {
 
   // Ref for auto-advance timer
   const autoAdvanceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  // Ref for share card DOM element
-  const shareCardRef = useRef<HTMLDivElement | null>(null);
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
-  const [showSharePreview, setShowSharePreview] = useState(false);
+  const [shareImageUri, setShareImageUri] = useState<string | null>(null);
 
   // Dark mode is off by default - user can toggle manually
 
@@ -779,11 +869,33 @@ export default function Home() {
                     <ChevronRight className="w-4 h-4 ml-1" />
                   </Button>
                   <Button
-                    onClick={() => setShowSharePreview(true)}
-                    className="rounded-full px-6 h-11 sm:h-9 font-light tracking-wider bg-warm/80 hover:bg-warm text-warm-foreground transition-all duration-300 active:scale-95"
+                    onClick={async () => {
+                      if (!result) return;
+                      setIsGeneratingImage(true);
+                      try {
+                        const dataUrl = await generateShareImage(result, getWeekdayChinese());
+                        setShareImageUri(dataUrl);
+                      } catch (err) {
+                        console.error('Share image error:', err);
+                        toast.error('生成图片失败，请稍后再试');
+                      } finally {
+                        setIsGeneratingImage(false);
+                      }
+                    }}
+                    disabled={isGeneratingImage}
+                    className="rounded-full px-6 h-11 sm:h-9 font-light tracking-wider bg-warm/80 hover:bg-warm text-warm-foreground transition-all duration-300 active:scale-95 disabled:opacity-50"
                   >
-                    <Download className="w-4 h-4 mr-1.5" />
-                    保存分享图
+                    {isGeneratingImage ? (
+                      <>
+                        <Sparkles className="w-4 h-4 mr-1.5 animate-spin" />
+                        生成中...
+                      </>
+                    ) : (
+                      <>
+                        <Download className="w-4 h-4 mr-1.5" />
+                        保存分享图
+                      </>
+                    )}
                   </Button>
                   <Button
                     variant="ghost"
@@ -797,14 +909,14 @@ export default function Home() {
 
                 {/* Share Preview Modal */}
                 <AnimatePresence>
-                  {showSharePreview && result && (
+                  {shareImageUri && (
                     <motion.div
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
                       transition={{ duration: 0.3 }}
                       className="fixed inset-0 z-[10000] flex flex-col items-center justify-center bg-foreground/30 backdrop-blur-sm p-4"
-                      onClick={() => setShowSharePreview(false)}
+                      onClick={() => setShareImageUri(null)}
                     >
                       <motion.div
                         initial={{ opacity: 0, scale: 0.9, y: 20 }}
@@ -814,65 +926,46 @@ export default function Home() {
                         className="flex flex-col items-center gap-4 max-h-[90vh]"
                         onClick={(e) => e.stopPropagation()}
                       >
-                        {/* Preview card */}
-                        <div
-                          ref={shareCardRef}
-                          style={{
-                            width: 320,
-                            padding: 36,
-                            background: '#FAF8F5',
-                            fontFamily: '"Noto Serif SC", serif',
-                            borderRadius: 16,
-                            boxShadow: '0 4px 24px rgba(0,0,0,0.08)',
-                          }}
-                        >
-                          <ShareCardContent result={result} weekday={getWeekdayChinese()} />
+                        {/* Preview image */}
+                        <div className="max-h-[70vh] overflow-auto">
+                          <img
+                            src={shareImageUri}
+                            alt="分享卡片"
+                            className="max-w-full rounded-2xl shadow-lg"
+                            style={{ maxHeight: '60vh' }}
+                          />
                         </div>
+
+                        <p className="text-xs text-muted-foreground/60 font-light text-center">
+                          长按图片也可保存到相册
+                        </p>
 
                         {/* Action buttons */}
                         <div className="flex gap-3">
                           <Button
-                            onClick={async () => {
-                              if (!shareCardRef.current) return;
-                              setIsGeneratingImage(true);
+                            onClick={() => {
                               try {
-                                await new Promise((r) => setTimeout(r, 200));
-                                const canvas = await html2canvas(shareCardRef.current, {
-                                  scale: 2,
-                                  backgroundColor: '#FAF8F5',
-                                  useCORS: true,
-                                  logging: false,
-                                });
                                 const link = document.createElement('a');
                                 link.download = `心语_${getWeekdayChinese()}.png`;
-                                link.href = canvas.toDataURL('image/png');
+                                link.href = shareImageUri;
+                                document.body.appendChild(link);
                                 link.click();
+                                document.body.removeChild(link);
                                 toast.success('图片已保存');
                               } catch {
-                                toast.error('生成图片失败，请截图保存');
-                              } finally {
-                                setIsGeneratingImage(false);
-                                setShowSharePreview(false);
+                                // Fallback for mobile: open in new tab
+                                window.open(shareImageUri, '_blank');
+                                toast.success('请长按图片保存');
                               }
                             }}
-                            disabled={isGeneratingImage}
-                            className="rounded-full px-6 h-11 font-light tracking-wider bg-sage hover:bg-sage/90 text-sage-foreground transition-all duration-300 active:scale-95 disabled:opacity-50"
+                            className="rounded-full px-6 h-11 font-light tracking-wider bg-sage hover:bg-sage/90 text-sage-foreground transition-all duration-300 active:scale-95"
                           >
-                            {isGeneratingImage ? (
-                              <>
-                                <Sparkles className="w-4 h-4 mr-1.5 animate-spin" />
-                                生成中...
-                              </>
-                            ) : (
-                              <>
-                                <Download className="w-4 h-4 mr-1.5" />
-                                保存到相册
-                              </>
-                            )}
+                            <Download className="w-4 h-4 mr-1.5" />
+                            保存到相册
                           </Button>
                           <Button
                             variant="outline"
-                            onClick={() => setShowSharePreview(false)}
+                            onClick={() => setShareImageUri(null)}
                             className="rounded-full px-6 h-11 font-light tracking-wider"
                           >
                             关闭

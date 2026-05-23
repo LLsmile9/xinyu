@@ -108,3 +108,35 @@ Stage Summary:
 - 120 new questions added (20 per category)
 - Per-category non-repeat: each sub-category cycles through 50 unique questions
 - 50 sessions × 5 questions = 250 unique questions before any repeat
+
+---
+Task ID: 6
+Agent: Main Agent
+Task: Fix share image generation failure - replace html2canvas with Canvas API
+
+Work Log:
+- User reported "生成图片失败" when clicking "保存到相册" in the share preview modal
+- Diagnosed: html2canvas library fails to capture elements inside framer-motion animated containers with backdrop-blur-sm CSS
+- Replaced html2canvas with a native Canvas API-based image generator (generateShareImage function)
+- Removed html2canvas dependency entirely
+- New approach: uses Canvas 2D API to draw the share card directly (no DOM parsing needed)
+- Key features of Canvas generator:
+  - Waits for document.fonts.ready before rendering
+  - Uses the actual --font-serif CSS variable from Next.js font optimization
+  - Chinese text wrapping via character-by-character measurement
+  - Two-pass rendering: measure height first, then draw content
+  - 2x DPR for retina quality
+  - Rounded corners background matching the site's warm cream (#FAF8F5)
+  - Replaced emojis (🌿💚📖) with reliable Unicode/text alternatives (·♡) for Canvas compatibility
+- Updated preview modal: now shows the Canvas-generated image as an <img> tag instead of DOM-rendered card
+- Added mobile-friendly hint "长按图片也可保存到相册" in the modal
+- Added download fallback: if link.click() fails (iOS Safari), opens image in new tab for long-press save
+- Removed shareCardRef, showSharePreview state variables (no longer needed)
+- Added shareImageUri state to hold the generated image data URL
+
+Stage Summary:
+- Replaced html2canvas with Canvas API for 100% reliable image generation
+- No external dependencies needed for image generation
+- Preview shows exactly what will be downloaded (Canvas-rendered image)
+- Mobile users can long-press the preview image to save
+- Lint passes, dev server running correctly

@@ -1,28 +1,27 @@
 import { NextResponse } from 'next/server';
+import { turso } from '@/lib/db';
 
 export async function GET() {
   const debug = {
-    DATABASE_URL: process.env.DATABASE_URL ? '✅ 已设置' : '❌ 未设置',
-    DATABASE_AUTH_TOKEN: process.env.DATABASE_AUTH_TOKEN ? '✅ 已设置' : '❌ 未设置',
-    AI_BASE_URL: process.env.AI_BASE_URL || '❌ 未设置',
-    AI_API_KEY: process.env.AI_API_KEY ? '✅ 已设置' : '❌ 未设置',
-    AI_MODEL: process.env.AI_MODEL || '(默认值)',
+    DATABASE_URL: process.env.DATABASE_URL ? '✅ set' : '❌ not set',
+    DATABASE_AUTH_TOKEN: process.env.DATABASE_AUTH_TOKEN ? '✅ set' : '❌ not set',
+    AI_BASE_URL: process.env.AI_BASE_URL || '❌ not set',
+    AI_API_KEY: process.env.AI_API_KEY ? '✅ set' : '❌ not set',
+    AI_MODEL: process.env.AI_MODEL || '(default)',
     NODE_ENV: process.env.NODE_ENV,
   };
 
   // Test database connection
-  let dbStatus = '未测试';
+  let dbStatus = 'not tested';
   try {
-    const { getDb } = await import('@/lib/db');
-    const db = getDb();
-    await db.$queryRaw`SELECT 1`;
-    dbStatus = '✅ 连接正常';
+    const result = await turso.execute('SELECT 1 as test');
+    dbStatus = `✅ connected (test=${(result.rows[0] as any).test})`;
   } catch (e: any) {
     dbStatus = `❌ ${e.message}`;
   }
 
   // Test AI connection
-  let aiStatus = '未测试';
+  let aiStatus = 'not tested';
   try {
     const baseUrl = process.env.AI_BASE_URL;
     const apiKey = process.env.AI_API_KEY;
@@ -35,18 +34,18 @@ export async function GET() {
         },
         body: JSON.stringify({
           model: process.env.AI_MODEL || 'moonshot-v1-8k',
-          messages: [{ role: 'user', content: '你好，请回复OK' }],
+          messages: [{ role: 'user', content: 'say OK' }],
           max_tokens: 5,
         }),
       });
       if (res.ok) {
         const data = await res.json();
-        aiStatus = `✅ 连接正常 (${data.choices?.[0]?.message?.content || 'no content'})`;
+        aiStatus = `✅ connected (${data.choices?.[0]?.message?.content || 'no content'})`;
       } else {
         aiStatus = `❌ HTTP ${res.status}: ${await res.text()}`;
       }
     } else {
-      aiStatus = '❌ AI_BASE_URL 或 AI_API_KEY 未设置';
+      aiStatus = '❌ AI_BASE_URL or AI_API_KEY not set';
     }
   } catch (e: any) {
     aiStatus = `❌ ${e.message}`;

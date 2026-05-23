@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/lib/db';
+import { createCheckIn, getAllCheckIns, getCheckInsByDate } from '@/lib/db';
 
 export async function POST(req: NextRequest) {
   try {
@@ -13,19 +13,17 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const checkIn = await db.checkIn.create({
-      data: {
-        date,
-        time,
-        answersJson: typeof answersJson === 'string' ? answersJson : JSON.stringify(answersJson),
-        summary,
-        encouragement,
-        book: book || '',
-        visitorId: visitorId || '',
-      },
+    await createCheckIn({
+      date,
+      time,
+      answersJson: typeof answersJson === 'string' ? answersJson : JSON.stringify(answersJson),
+      summary,
+      encouragement,
+      book: book || '',
+      visitorId: visitorId || '',
     });
 
-    return NextResponse.json(checkIn);
+    return NextResponse.json({ success: true });
   } catch (error) {
     console.error('CheckIn POST error:', error);
     return NextResponse.json(
@@ -41,21 +39,12 @@ export async function GET(req: NextRequest) {
     const date = url.searchParams.get('date');
 
     if (date) {
-      // Get check-ins for a specific date
-      const checkIns = await db.checkIn.findMany({
-        where: { date },
-        orderBy: { createdAt: 'asc' },
-      });
+      const checkIns = await getCheckInsByDate(date);
       return NextResponse.json(checkIns);
     }
 
-    // Get all recent check-ins
-    const checkIns = await db.checkIn.findMany({
-      orderBy: { createdAt: 'desc' },
-      take: 50,
-    });
-
-    return NextResponse.json(checkIns);
+    const checkIns = await getAllCheckIns();
+    return NextResponse.json(checkIns.slice(0, 50));
   } catch (error) {
     console.error('CheckIn GET error:', error);
     return NextResponse.json(

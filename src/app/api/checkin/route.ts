@@ -4,33 +4,20 @@ import { db } from '@/lib/db';
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { date, sleepQuality, mood, trouble, expectation, word, summary, encouragement } = body;
+    const { date, time, answersJson, summary, encouragement } = body;
 
-    if (!date || sleepQuality === undefined || !mood || !summary || !encouragement) {
+    if (!date || !time || !answersJson || !summary || !encouragement) {
       return NextResponse.json(
         { error: '缺少必要字段' },
         { status: 400 }
       );
     }
 
-    const checkIn = await db.checkIn.upsert({
-      where: { date },
-      update: {
-        sleepQuality,
-        mood,
-        trouble: trouble || null,
-        expectation: expectation || null,
-        word: word || null,
-        summary,
-        encouragement,
-      },
-      create: {
+    const checkIn = await db.checkIn.create({
+      data: {
         date,
-        sleepQuality,
-        mood,
-        trouble: trouble || null,
-        expectation: expectation || null,
-        word: word || null,
+        time,
+        answersJson: typeof answersJson === 'string' ? answersJson : JSON.stringify(answersJson),
         summary,
         encouragement,
       },
@@ -46,11 +33,24 @@ export async function POST(req: NextRequest) {
   }
 }
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
+    const url = new URL(req.url);
+    const date = url.searchParams.get('date');
+
+    if (date) {
+      // Get check-ins for a specific date
+      const checkIns = await db.checkIn.findMany({
+        where: { date },
+        orderBy: { createdAt: 'asc' },
+      });
+      return NextResponse.json(checkIns);
+    }
+
+    // Get all recent check-ins
     const checkIns = await db.checkIn.findMany({
       orderBy: { createdAt: 'desc' },
-      take: 30,
+      take: 50,
     });
 
     return NextResponse.json(checkIns);

@@ -9,12 +9,9 @@ datasource db {
 
 model CheckIn {
   id            String   @id @default(cuid())
-  date          String   @unique
-  sleepQuality  Int      
-  mood          String   
-  trouble       String?  
-  expectation   String?  
-  word          String?  
+  date          String   
+  time          String   
+  answersJson   String   
   summary       String   
   encouragement String   
   createdAt     DateTime @default(now())

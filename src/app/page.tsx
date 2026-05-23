@@ -320,6 +320,9 @@ export default function Home() {
     return false;
   });
 
+  // Ref for auto-advance timer
+  const autoAdvanceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   // Dark mode is off by default - user can toggle manually
 
   // Load history on mount
@@ -426,12 +429,6 @@ export default function Home() {
         });
     }
   }, [step, currentQuestions, answers, todayCheckIns, history]);
-
-  const canProceed = useCallback(() => {
-    const q = currentQuestions[step];
-    if (!q) return false;
-    return !!answers[q.id];
-  }, [step, currentQuestions, answers]);
 
   const handleHistory = useCallback(() => {
     fetch('/api/checkin')
@@ -600,9 +597,23 @@ export default function Home() {
                           {currentQuestions[step].options.map((opt) => (
                             <button
                               key={opt.value}
-                              onClick={() =>
-                                setAnswers((a) => ({ ...a, [currentQuestions[step].id]: opt.value }))
-                              }
+                              onClick={() => {
+                                const qId = currentQuestions[step].id;
+                                setAnswers((a) => ({ ...a, [qId]: opt.value }));
+                                // Auto-advance after a short delay so user sees the selection
+                                // Clear any pending advance first
+                                if (autoAdvanceRef.current) clearTimeout(autoAdvanceRef.current);
+                                autoAdvanceRef.current = setTimeout(() => {
+                                  setStep((currentStep) => {
+                                    if (currentStep < currentQuestions.length - 1) {
+                                      return currentStep + 1;
+                                    } else {
+                                      handleNext();
+                                      return currentStep;
+                                    }
+                                  });
+                                }, 450);
+                              }}
                               className={`flex flex-col items-center justify-center gap-1.5 py-3.5 sm:py-4 rounded-2xl border transition-all duration-300 cursor-pointer active:scale-95 sm:active:scale-100 min-h-[68px] sm:min-h-0 sm:px-5 ${
                                 answers[currentQuestions[step].id] === opt.value
                                   ? 'border-sage bg-sage/10 shadow-sm scale-[1.02] sm:scale-105'
@@ -621,8 +632,8 @@ export default function Home() {
                   )}
                 </AnimatePresence>
 
-                {/* Navigation - mobile friendly */}
-                <div className="flex justify-between items-center pt-2 sm:pt-4">
+                {/* Navigation - back only */}
+                <div className="flex justify-start items-center pt-2 sm:pt-4">
                   <Button
                     variant="ghost"
                     onClick={() => {
@@ -633,15 +644,6 @@ export default function Home() {
                   >
                     <ArrowLeft className="w-4 h-4 mr-1" />
                     {step > 0 ? '上一步' : '返回'}
-                  </Button>
-
-                  <Button
-                    onClick={handleNext}
-                    disabled={!canProceed()}
-                    className="rounded-full px-6 h-11 sm:h-9 font-light tracking-wider bg-sage hover:bg-sage/90 text-sage-foreground disabled:opacity-30 disabled:hover:bg-sage transition-all duration-300 active:scale-95"
-                  >
-                    {step === currentQuestions.length - 1 ? '静候心语' : '下一步'}
-                    <ChevronRight className="w-4 h-4 ml-1" />
                   </Button>
                 </div>
               </motion.div>
@@ -703,7 +705,7 @@ export default function Home() {
                     <Leaf className="w-3.5 h-3.5 text-sage/40" />
                     <div className="w-8 h-px bg-sage/30" />
                   </div>
-                  <p className="text-lg sm:text-xl font-light text-foreground leading-relaxed tracking-wide max-w-xs font-serif">
+                  <p className="text-sm sm:text-base font-light text-muted-foreground/80 leading-relaxed tracking-wide max-w-xs font-serif">
                     {result.summary}
                   </p>
                   <div className="flex items-center gap-4 justify-center">
@@ -720,12 +722,12 @@ export default function Home() {
                   transition={{ delay: 1, duration: 1 }}
                   className="space-y-4 max-w-sm"
                 >
-                  <div className="flex items-center justify-center gap-2 text-sage/60">
-                    <Heart className="w-3.5 h-3.5" />
-                    <span className="text-xs tracking-widest font-light">给你的话</span>
-                    <Heart className="w-3.5 h-3.5" />
+                  <div className="flex items-center justify-center gap-2 text-sage/70">
+                    <Heart className="w-4 h-4" />
+                    <span className="text-sm tracking-widest font-light">给你的话</span>
+                    <Heart className="w-4 h-4" />
                   </div>
-                  <p className="text-lg sm:text-xl font-light text-muted-foreground leading-relaxed font-serif">
+                  <p className="text-xl sm:text-2xl font-light text-foreground leading-relaxed font-serif">
                     {result.encouragement}
                   </p>
 

@@ -104,12 +104,12 @@ const QUESTION_POOL: Question[] = [
     subtitle: '想象那扇门的模样',
     type: 'tarot',
     options: [
-      { value: '半开的门', display: '🚪' },
-      { value: '紧闭的门', display: '🔒' },
-      { value: '敞开的门', display: '🏛️' },
-      { value: '隐形的门', display: '✨' },
-      { value: '旋转的门', display: '🌀' },
-      { value: '画中的门', display: '🖼️' },
+      { value: '半开', display: '🚪' },
+      { value: '紧闭', display: '🔒' },
+      { value: '敞开', display: '🏛️' },
+      { value: '隐形', display: '✨' },
+      { value: '旋转', display: '🌀' },
+      { value: '画中', display: '🖼️' },
     ],
   },
   // Nature element
@@ -131,10 +131,10 @@ const QUESTION_POOL: Question[] = [
     subtitle: '诚实面对匮乏',
     type: 'element',
     options: [
-      { value: '水的温柔', display: '🌊' },
-      { value: '火的勇气', display: '🔥' },
-      { value: '风的轻盈', display: '🍃' },
-      { value: '土的安定', display: '🏔️' },
+      { value: '温柔', display: '🌊' },
+      { value: '勇气', display: '🔥' },
+      { value: '轻盈', display: '🍃' },
+      { value: '安定', display: '🏔️' },
     ],
   },
   // Season / Time
@@ -227,11 +227,11 @@ const QUESTION_POOL: Question[] = [
     subtitle: '感受你内心的律动',
     type: 'metaphor',
     options: [
-      { value: '缓慢低沉', display: '🎵' },
-      { value: '轻快跳跃', display: '🎶' },
-      { value: '激烈急促', display: '🥁' },
-      { value: '安静留白', display: '🤫' },
-      { value: '悠远回响', display: '🎻' },
+      { value: '低沉', display: '🎵' },
+      { value: '轻快', display: '🎶' },
+      { value: '激烈', display: '🥁' },
+      { value: '安静', display: '🤫' },
+      { value: '悠远', display: '🎻' },
     ],
   },
   // Body sensation
@@ -271,12 +271,12 @@ const QUESTION_POOL: Question[] = [
     subtitle: '用触觉感知情绪',
     type: 'texture',
     options: [
-      { value: '柔软毛毯', display: '🧶' },
-      { value: '冰凉石面', display: '🪨' },
-      { value: '温热水流', display: '💧' },
-      { value: '粗糙树皮', display: '🌳' },
-      { value: '光滑丝绸', display: '🎀' },
-      { value: '干燥沙粒', display: '🏜️' },
+      { value: '毛毯', display: '🧶' },
+      { value: '石面', display: '🪨' },
+      { value: '水流', display: '💧' },
+      { value: '树皮', display: '🌳' },
+      { value: '丝绸', display: '🎀' },
+      { value: '沙粒', display: '🏜️' },
     ],
   },
 ];
@@ -830,7 +830,7 @@ export default function Home() {
                     disabled={!canProceed()}
                     className="rounded-full px-6 font-light tracking-wider bg-sage hover:bg-sage/90 text-sage-foreground disabled:opacity-30 disabled:hover:bg-sage transition-all duration-300"
                   >
-                    {step === currentQuestions.length - 1 ? '生成心语' : '下一步'}
+                    {step === currentQuestions.length - 1 ? '静候心语' : '下一步'}
                     <ChevronRight className="w-4 h-4 ml-1" />
                   </Button>
                 </div>

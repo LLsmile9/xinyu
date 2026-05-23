@@ -942,13 +942,12 @@ export default function Home() {
                       </>
                     )}
                   </Button>
-                  <Button
+                  <button
                     onClick={() => setShowTipModal(true)}
-                    className="rounded-full px-6 h-11 sm:h-9 font-light tracking-wider bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 transition-all duration-300 active:scale-95"
+                    className="text-[11px] text-muted-foreground/30 hover:text-sage/50 font-light tracking-wider transition-colors duration-300 mt-1"
                   >
-                    <Coffee className="w-4 h-4 mr-1.5" />
-                    请我喝杯茶
-                  </Button>
+                    打赏碎银子
+                  </button>
                   <Button
                     variant="ghost"
                     onClick={() => setView('greeting')}
@@ -1166,9 +1165,9 @@ export default function Home() {
               <div className="flex flex-col items-center gap-4 text-center">
                 <Coffee className="w-8 h-8 text-amber-600" />
                 <div>
-                  <h3 className="text-lg font-light text-foreground">请我喝杯茶</h3>
+                  <h3 className="text-lg font-light text-foreground">打赏碎银子</h3>
                   <p className="text-xs text-muted-foreground/60 font-light mt-1">
-                    如果心语温暖了你，可以请我喝杯茶 ☕
+                    如果心语温暖了你，可以赏点碎银子 ☕
                   </p>
                 </div>
                 <div className="rounded-2xl overflow-hidden border border-amber-100 shadow-sm">

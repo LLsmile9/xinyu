@@ -50,6 +50,10 @@ export async function ensureTables(): Promise<void> {
         createdAt TEXT NOT NULL
       )
     `);
+    // Ensure missing columns (for tables created with old schema)
+    try { await turso.execute('ALTER TABLE CheckIn ADD COLUMN book TEXT NOT NULL DEFAULT ""'); } catch {}
+    try { await turso.execute('ALTER TABLE CheckIn ADD COLUMN visitorId TEXT NOT NULL DEFAULT ""'); } catch {}
+
     console.log('✅ Tables ensured');
   } catch (e) {
     console.error('❌ Failed to create tables:', e);

@@ -128,8 +128,8 @@ export async function getStats(): Promise<{
   const [visitors, checkIns, todayVisitors, todayCheckIns] = await Promise.all([
     turso.execute('SELECT COUNT(*) as count FROM Visitor'),
     turso.execute('SELECT COUNT(*) as count FROM CheckIn'),
-    turso.execute("SELECT COUNT(*) as count FROM Visitor WHERE date(lastSeen) = date('now')"),
-    turso.execute("SELECT COUNT(*) as count FROM CheckIn WHERE date = strftime('%Y-%m-%d', 'now')"),
+    turso.execute("SELECT COUNT(*) as count FROM Visitor WHERE date(lastSeen, '+8 hours') = date('now', '+8 hours')"),
+    turso.execute("SELECT COUNT(*) as count FROM CheckIn WHERE date = strftime('%Y-%m-%d', 'now', '+8 hours')"),
   ])
 
   return {

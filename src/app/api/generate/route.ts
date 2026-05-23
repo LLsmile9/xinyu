@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import ZAI from 'z-ai-web-dev-sdk';
 
 export async function POST(req: NextRequest) {
   try {
@@ -11,8 +10,6 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       );
     }
-
-    const zai = await ZAI.create();
 
     // Format current answers
     const currentAnswers = answers
@@ -37,11 +34,7 @@ export async function POST(req: NextRequest) {
       usedPhilosophersContext = `\n\n【非常重要】以下是该用户之前已经收到过的心语和哲学家，你绝对不能重复使用这些哲学家，必须选择列表中未出现过的其他哲学家：\n${usedList}`;
     }
 
-    const completion = await zai.chat.completions.create({
-      messages: [
-        {
-          role: 'assistant',
-          content: `你是一位温暖而富有洞察力的心灵陪伴者，精通多种心理学流派和东西方哲学。根据用户对五个抽象心理问题的回答，生成三段内容：
+    const systemPrompt = `你是一位温暖而富有洞察力的心灵陪伴者，精通多种心理学流派和东西方哲学。根据用户对五个抽象心理问题的回答，生成三段内容：
 
 1. 心情总结（summary）：用温柔、诗意、隐喻的语言，概括用户此刻的心理状态。像写一句诗一样，不超过30个中文字。不要用"你"开头，用第三人称或意象来描述。
 
@@ -52,24 +45,66 @@ export async function POST(req: NextRequest) {
 【关键规则】绝对不能重复使用用户之前已经收到过的哲学家！如果用户附上了"已经收到过的心语"列表，你必须从中识别出已使用的哲学家，并选择一位全新的、未出现过的哲学家。只有在所有50位都用完后才允许重复。
 
 可选思想家列表：
-荣格、毛姆、弗兰克尔、阿德勒、马可·奥勒留、王阳明、托尔斯泰、陀思妥耶夫斯基、克尔凯郭尔、传道书/箴言、尼采、加缪、庄子、老子、赫尔曼·黑塞、里尔克、萨特、弗洛姆、孔子、苏格拉底、柏拉图、亚里士多德、伊壁鸠鲁、塞涅卡、爱比克泰德、蒙田、帕斯卡、卢梭、康德、叔本华、海德格尔、维特根斯坦、波伏娃、汉娜·阿伦特、罗曼·罗兰、纪伯伦、泰戈尔、梭罗、惠特曼、普鲁斯特、卡夫卡、博尔赫斯、三岛由纪夫、川端康成、夏目漱石、鲁迅、林语堂、丰子恺、朱光潜
+荣格、毛姆、弗兰克尔、阿德勒、马可·奥勒留、王阳明、托尔斯泰、陀思妥耶夫斯基、克尔凯郭尔、传道书/箴言、尼采、加缪、庄子、老子、赫尔曼·黑塞、里里尔克、萨特、弗洛姆、孔子、苏格拉底、柏拉图、亚里士多德、伊壁鸠鲁、塞涅卡、爱比克泰德、蒙田、帕斯卡、卢梭、康德、叔本华、海德格尔、维特根斯坦、波伏娃、汉娜·阿伦特、罗曼·罗兰、纪伯伦、泰戈尔、梭罗、惠特曼、普鲁斯特、卡夫卡、博尔赫斯、三岛由纪夫、川端康成、夏目漱石、鲁迅、林语堂、丰子恺、朱光潜
 
 3. 推荐书目（book）：推荐这位思想家的一本与当前心境相关的著作，格式为"作者《中文书名》/ Book Title"，不超过30个字。确保书名真实存在。
 
 请严格按以下JSON格式返回，不要包含任何其他文字：
-{"summary": "...", "encouragement": "...", "book": "..."}`,
-        },
-        {
-          role: 'user',
-          content: `这是我此刻的心理画像：\n${currentAnswers}${comparisonContext}${usedPhilosophersContext}`,
-        },
-      ],
-      thinking: { type: 'disabled' },
-    });
+{"summary": "...", "encouragement": "...", "book": "..."}`;
 
-    const response = completion.choices[0]?.message?.content;
+    const userMessage = `这是我此刻的心理画像：\n${currentAnswers}${comparisonContext}${usedPhilosophersContext}`;
 
-    if (!response) {
+    // Call AI API - support both z-ai-web-dev-sdk (sandbox) and OpenAI-compatible API (production)
+    let responseText = '';
+
+    const aiBaseUrl = process.env.AI_BASE_URL;
+    const aiApiKey = process.env.AI_API_KEY;
+    const aiModel = process.env.AI_MODEL || 'gpt-4o-mini';
+
+    if (aiBaseUrl && aiApiKey) {
+      // Production mode: use OpenAI-compatible API directly
+      const apiResponse = await fetch(`${aiBaseUrl}/chat/completions`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${aiApiKey}`,
+        },
+        body: JSON.stringify({
+          model: aiModel,
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: userMessage },
+          ],
+          temperature: 0.8,
+        }),
+      });
+
+      if (!apiResponse.ok) {
+        const errorBody = await apiResponse.text();
+        console.error('AI API error:', apiResponse.status, errorBody);
+        return NextResponse.json(
+          { error: 'AI 生成失败，请稍后再试' },
+          { status: 500 }
+        );
+      }
+
+      const result = await apiResponse.json();
+      responseText = result.choices?.[0]?.message?.content || '';
+    } else {
+      // Sandbox mode: use z-ai-web-dev-sdk
+      const ZAI = (await import('z-ai-web-dev-sdk')).default;
+      const zai = await ZAI.create();
+      const completion = await zai.chat.completions.create({
+        messages: [
+          { role: 'assistant', content: systemPrompt },
+          { role: 'user', content: userMessage },
+        ],
+        thinking: { type: 'disabled' },
+      });
+      responseText = completion.choices[0]?.message?.content || '';
+    }
+
+    if (!responseText) {
       return NextResponse.json(
         { error: 'AI 生成失败，请稍后再试' },
         { status: 500 }
@@ -79,10 +114,10 @@ export async function POST(req: NextRequest) {
     // Try to parse JSON from the response
     let parsed;
     try {
-      const cleaned = response.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+      const cleaned = responseText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
       parsed = JSON.parse(cleaned);
     } catch {
-      const jsonMatch = response.match(/\{[\s\S]*?"summary"[\s\S]*?"encouragement"[\s\S]*?\}/);
+      const jsonMatch = responseText.match(/\{[\s\S]*?"summary"[\s\S]*?"encouragement"[\s\S]*?\}/);
       if (jsonMatch) {
         try {
           parsed = JSON.parse(jsonMatch[0]);
@@ -90,9 +125,8 @@ export async function POST(req: NextRequest) {
           parsed = null;
         }
       }
-      // Try to also match with book field
       if (!parsed || !parsed.summary) {
-        const jsonMatch2 = response.match(/\{[\s\S]*?"summary"[\s\S]*?"encouragement"[\s\S]*?"book"[\s\S]*?\}/);
+        const jsonMatch2 = responseText.match(/\{[\s\S]*?"summary"[\s\S]*?"encouragement"[\s\S]*?"book"[\s\S]*?\}/);
         if (jsonMatch2) {
           try {
             parsed = JSON.parse(jsonMatch2[0]);

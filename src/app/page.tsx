@@ -14,7 +14,6 @@ import {
   Sparkles,
   Leaf,
   Heart,
-  Coins,
   BookOpen,
 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -43,7 +42,7 @@ interface AnswerPair {
 }
 
 // ============ Per-category non-repeat tracking ============
-const USED_QUESTIONS_KEY = 'xinyu_used_questions_v2';
+const USED_QUESTIONS_KEY = 'xinyu_used_questions_v3';
 
 type UsedMap = Record<string, string[]>; // category -> list of used question IDs
 
@@ -222,85 +221,7 @@ function HeartCursor() {
   );
 }
 
-// ============ Tip / Reward Modal ============
-function TipButton() {
-  const [showTip, setShowTip] = useState(false);
 
-  return (
-    <>
-      <button
-        onClick={() => setShowTip(true)}
-        className="inline-flex items-center gap-1 text-muted-foreground/40 hover:text-sage/70 transition-colors duration-300 font-light text-xs tracking-wider mt-2"
-        aria-label="打赏碎银子"
-      >
-        <Coins className="w-3 h-3" />
-        <span>打赏碎银子</span>
-      </button>
-
-      <AnimatePresence>
-        {showTip && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.3 }}
-            className="fixed inset-0 z-[10000] flex items-center justify-center bg-foreground/20 backdrop-blur-sm"
-            onClick={() => setShowTip(false)}
-          >
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              transition={{ duration: 0.3, ease: 'easeOut' }}
-              className="bg-card border border-border rounded-3xl p-8 max-w-xs w-full mx-4 shadow-xl space-y-6 text-center"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="space-y-2">
-                <div className="flex items-center justify-center gap-2">
-                  <Coins className="w-5 h-5 text-sage/70" />
-                  <h3 className="text-lg font-light text-foreground tracking-wider">碎银子</h3>
-                </div>
-                <p className="text-sm font-light text-muted-foreground leading-relaxed">
-                  你的每一份支持，都是继续创作的温暖动力
-                </p>
-              </div>
-
-              <div className="space-y-4">
-                <div className="p-4 rounded-2xl bg-sage/5 border border-sage/10 space-y-3">
-                  <p className="text-xs font-light text-muted-foreground tracking-wider">微信支付</p>
-                  <div className="w-32 h-32 mx-auto bg-white rounded-xl flex items-center justify-center border border-border/50">
-                    <div className="text-center space-y-1">
-                      <div className="text-3xl">💚</div>
-                      <p className="text-[10px] text-gray-500 font-light">微信扫码支持</p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="p-4 rounded-2xl bg-sage/5 border border-sage/10 space-y-2">
-                  <p className="text-xs font-light text-muted-foreground tracking-wider">支付宝</p>
-                  <div className="w-32 h-32 mx-auto bg-white rounded-xl flex items-center justify-center border border-border/50">
-                    <div className="text-center space-y-1">
-                      <div className="text-3xl">💙</div>
-                      <p className="text-[10px] text-gray-500 font-light">支付宝扫码支持</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <Button
-                variant="ghost"
-                onClick={() => setShowTip(false)}
-                className="text-muted-foreground hover:text-foreground font-light text-sm"
-              >
-                关闭
-              </Button>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </>
-  );
-}
 
 // ============ Main Component ============
 export default function Home() {
@@ -591,9 +512,14 @@ export default function Home() {
                         </p>
                       </div>
 
-                      {/* Option buttons - mobile friendly */}
+                      {/* Option buttons - adaptive grid layout */}
                       <div className="min-h-[160px] sm:min-h-[180px] flex items-center justify-center">
-                        <div className="grid grid-cols-3 sm:flex sm:flex-wrap justify-center gap-2.5 sm:gap-3 w-full sm:w-auto">
+                        <div className={`grid gap-3 w-full max-w-sm mx-auto ${
+                          currentQuestions[step].options.length <= 2 ? 'grid-cols-2' :
+                          currentQuestions[step].options.length === 3 ? 'grid-cols-3' :
+                          currentQuestions[step].options.length === 4 ? 'grid-cols-2' :
+                          'grid-cols-3'
+                        }`}>
                           {currentQuestions[step].options.map((opt) => (
                             <button
                               key={opt.value}
@@ -614,9 +540,9 @@ export default function Home() {
                                   });
                                 }, 450);
                               }}
-                              className={`flex flex-col items-center justify-center gap-1.5 py-3.5 sm:py-4 rounded-2xl border transition-all duration-300 cursor-pointer active:scale-95 sm:active:scale-100 min-h-[68px] sm:min-h-0 sm:px-5 ${
+                              className={`flex flex-col items-center justify-center gap-1.5 py-4 sm:py-5 rounded-2xl border transition-all duration-300 cursor-pointer active:scale-95 ${
                                 answers[currentQuestions[step].id] === opt.value
-                                  ? 'border-sage bg-sage/10 shadow-sm scale-[1.02] sm:scale-105'
+                                  ? 'border-sage bg-sage/10 shadow-sm scale-[1.02]'
                                   : 'border-border hover:border-sage/40 hover:bg-sage/5 active:bg-sage/5'
                               }`}
                             >
@@ -764,7 +690,6 @@ export default function Home() {
                     <ArrowLeft className="w-4 h-4 mr-1" />
                     返回
                   </Button>
-                  <TipButton />
                 </motion.div>
               </motion.div>
             )}

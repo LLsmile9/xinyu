@@ -78,3 +78,33 @@ Stage Summary:
 - Per-category non-repeat: each sub-category cycles through 30 unique questions
 - 30 sessions × 5 questions = 150 unique questions before any repeat
 - Questions extracted to `src/lib/questions.ts` for maintainability
+
+---
+Task ID: 5
+Agent: Main Agent
+Task: Expand question pool to 50 per sub-category (300 total)
+
+Work Log:
+- Expanded QUESTION_POOL from 180 to 300 questions (6 categories × 50 each)
+- Added 20 new questions per category: c31-c50, n31-n50, s31-s50, b31-b50, d31-d50, p31-p50
+- Updated comment header from "6 Categories × 30 Questions = 180 Total" to "6 Categories × 50 Questions = 300 Total"
+- Updated category section headers from (30) to (50)
+- All new questions follow the established format: 4 options each with Chinese value (2-4 chars) and emoji display
+- Questions are abstract, introspective, poetic — using metaphors and imagery rather than direct "how are you" style
+- Each category maintains its thematic focus:
+  - color (c31-c50): sadness colors, silk colors, watercolor moods, sunset hues, ink wash tones, glaze colors
+  - nature (n31-n50): rivers, moonlight, seeds, trees, leaves, sounds, mountains, rain, twilight, tides
+  - symbol (s31-s50): seals, pens, flags, locks, chess, knots, walls, bells, nets, anchors, cloaks
+  - sensation (b31-b50): fingertips, scents, breathing rhythms, foreheads, postures, lips, vibrations, knees
+  - shadow (d31-d50): memories, cages, exposure, suppressed emotions, jealousy, armor, forgiveness, silence
+  - spirit (p31-p50): musical keys, ancient scripts, echoes, celestial events, meditation spaces, cosmic forces
+- Verified: 300 total questions, 50 per category, no duplicate IDs, all IDs sequential (01-50)
+- TypeScript compiles cleanly, dev server returns HTTP 200
+- Per-category non-repeat tracking in page.tsx is dynamic (filters by category from QUESTION_POOL), so it automatically works with 50 questions per category — no code changes needed there
+- With 50 questions per category and 5 questions per session (1 from each of 5 categories), 50 non-repeat sessions guaranteed before any category resets
+
+Stage Summary:
+- Question pool: 180 → 300 questions (6 categories × 50 each)
+- 120 new questions added (20 per category)
+- Per-category non-repeat: each sub-category cycles through 50 unique questions
+- 50 sessions × 5 questions = 250 unique questions before any repeat

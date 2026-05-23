@@ -14,11 +14,11 @@ export interface Question {
   options: QuestionOption[];
 }
 
-// ============ 6 Categories × 30 Questions = 180 Total ============
+// ============ 6 Categories × 50 Questions = 300 Total ============
 const QUESTION_POOL: Question[] = [
 
   // ═══════════════════════════════════════════
-  // 色彩 Color (30)
+  // 色彩 Color (50)
   // ═══════════════════════════════════════════
   { id: 'c01', title: '此刻你的内心是什么颜色？', subtitle: '闭上眼，感受那个颜色', type: 'color', options: [{ value: '深蓝', display: '🔵' },{ value: '暖橙', display: '🟠' },{ value: '嫩绿', display: '🟢' },{ value: '灰白', display: '⚪' }] },
   { id: 'c02', title: '你现在最需要的颜色是？', subtitle: '直觉选择', type: 'color', options: [{ value: '金色', display: '🟡' },{ value: '湖蓝', display: '💎' },{ value: '粉红', display: '💗' },{ value: '银灰', display: '🪞' }] },
@@ -50,9 +50,29 @@ const QUESTION_POOL: Question[] = [
   { id: 'c28', title: '此刻你最想点亮什么色的灯？', subtitle: '灯色改变氛围', type: 'color', options: [{ value: '暖黄', display: '💡' },{ value: '冷白', display: '🔦' },{ value: '粉紫', display: '🪩' },{ value: '橘红', display: '🏮' }] },
   { id: 'c29', title: '如果你的直觉是一种颜色？', subtitle: '直觉的色彩', type: 'color', options: [{ value: '靛蓝', display: '🔮' },{ value: '橙黄', display: '🔶' },{ value: '翠绿', display: '🟢' },{ value: '银白', display: '🪞' }] },
   { id: 'c30', title: '你此刻最想融入哪种色彩的世界？', subtitle: '完全沉浸', type: 'color', options: [{ value: '海洋蓝', display: '🌊' },{ value: '森林绿', display: '🌲' },{ value: '沙漠金', display: '🏜️' },{ value: '极光紫', display: '💜' }] },
+  { id: 'c31', title: '如果此刻你的忧伤有一种颜色？', subtitle: '忧伤不必是灰色', type: 'color', options: [{ value: '雾蓝', display: '🫧' },{ value: '暮橘', display: '🌇' },{ value: '霜白', display: '❄️' },{ value: '墨紫', display: '🔮' }] },
+  { id: 'c32', title: '你此刻最想触碰什么颜色的绸缎？', subtitle: '绸缎映照心境', type: 'color', options: [{ value: '酒红', display: '🍷' },{ value: '月白', display: '🌙' },{ value: '松绿', display: '🌲' },{ value: '鹅黄', display: '🐥' }] },
+  { id: 'c33', title: '如果此刻的心情是一幅水彩？', subtitle: '水彩会晕染', type: 'color', options: [{ value: '淡粉', display: '🌸' },{ value: '灰蓝', display: '🌧️' },{ value: '明黄', display: '🌻' },{ value: '墨黑', display: '🖤' }] },
+  { id: 'c34', title: '你的期待此刻是什么颜色？', subtitle: '期待自带光泽', type: 'color', options: [{ value: '金橙', display: '🔶' },{ value: '翠碧', display: '💎' },{ value: '银白', display: '✨' },{ value: '暗褐', display: '🪵' }] },
+  { id: 'c35', title: '如果给此刻的夜空加一抹色？', subtitle: '夜空不只是黑', type: 'color', options: [{ value: '极光绿', display: '💚' },{ value: '星紫', display: '💜' },{ value: '月金', display: '🟡' },{ value: '深蓝', display: '🔵' }] },
+  { id: 'c36', title: '你此刻的温柔是什么颜色？', subtitle: '温柔有千万种色', type: 'color', options: [{ value: '杏粉', display: '🌸' },{ value: '雾蓝', display: '🫧' },{ value: '鹅黄', display: '💛' },{ value: '米白', display: '🤍' }] },
+  { id: 'c37', title: '如果此刻你的心跳是彩色的？', subtitle: '心跳染上颜色', type: 'color', options: [{ value: '正红', display: '❤️' },{ value: '橘金', display: '🧡' },{ value: '青蓝', display: '💙' },{ value: '透明', display: '🫧' }] },
+  { id: 'c38', title: '你最想捡起哪颗彩色的石子？', subtitle: '石子里藏着光', type: 'color', options: [{ value: '碧绿', display: '🟢' },{ value: '胭脂', display: '🔴' },{ value: '琥珀', display: '🟠' },{ value: '乳白', display: '⚪' }] },
+  { id: 'c39', title: '此刻你最想走进哪扇彩色的门？', subtitle: '门后是另一个世界', type: 'color', options: [{ value: '朱红', display: '🚪' },{ value: '碧蓝', display: '🧿' },{ value: '明黄', display: '☀️' },{ value: '墨黑', display: '⬛' }] },
+  { id: 'c40', title: '如果此刻你的眼泪有颜色？', subtitle: '眼泪不总是透明', type: 'color', options: [{ value: '浅蓝', display: '💧' },{ value: '淡金', display: '✨' },{ value: '粉红', display: '💗' },{ value: '无色', display: '🫧' }] },
+  { id: 'c41', title: '你此刻的梦境是什么底色？', subtitle: '梦有自己的调色盘', type: 'color', options: [{ value: '深紫', display: '🔮' },{ value: '浅绿', display: '🍃' },{ value: '暖橘', display: '🌅' },{ value: '纯白', display: '☁️' }] },
+  { id: 'c42', title: '如果此刻你是一抹晚霞？', subtitle: '晚霞有万千色', type: 'color', options: [{ value: '赤金', display: '🌇' },{ value: '玫红', display: '🌹' },{ value: '灰蓝', display: '🌫️' },{ value: '紫橙', display: '💜' }] },
+  { id: 'c43', title: '你的勇气此刻是什么颜色？', subtitle: '勇气自带光谱', type: 'color', options: [{ value: '亮红', display: '🔴' },{ value: '金橙', display: '🟠' },{ value: '碧蓝', display: '🔵' },{ value: '苍白', display: '⚪' }] },
+  { id: 'c44', title: '如果此刻你是一杯调色的颜料？', subtitle: '颜料的纯度', type: 'color', options: [{ value: '群青', display: '🔵' },{ value: '朱砂', display: '🔴' },{ value: '藤黄', display: '🟡' },{ value: '花青', display: '🟢' }] },
+  { id: 'c45', title: '此刻你最想佩戴什么颜色的围巾？', subtitle: '围巾贴近肌肤', type: 'color', options: [{ value: '驼色', display: '🧣' },{ value: '藏蓝', display: '🧿' },{ value: '酒红', display: '🍷' },{ value: '浅灰', display: '🩶' }] },
+  { id: 'c46', title: '如果此刻的你是陶器上的釉色？', subtitle: '釉色经火而生', type: 'color', options: [{ value: '青瓷', display: '🫧' },{ value: '釉红', display: '🏺' },{ value: '白瓷', display: '🤍' },{ value: '黑釉', display: '⬛' }] },
+  { id: 'c47', title: '你此刻的思绪像哪种色彩的水墨？', subtitle: '水墨分五色', type: 'color', options: [{ value: '浓墨', display: '🖤' },{ value: '淡墨', display: '🩶' },{ value: '焦墨', display: '🪨' },{ value: '清墨', display: '💧' }] },
+  { id: 'c48', title: '此刻你最想打开什么颜色的伞？', subtitle: '伞是移动的庇护', type: 'color', options: [{ value: '透明', display: '☂️' },{ value: '深红', display: '🟥' },{ value: '天蓝', display: '🟦' },{ value: '墨绿', display: '🟩' }] },
+  { id: 'c49', title: '如果此刻你的灵魂是一束光？', subtitle: '光的频率决定颜色', type: 'color', options: [{ value: '紫光', display: '💜' },{ value: '金光', display: '✨' },{ value: '蓝光', display: '💙' },{ value: '白光', display: '🤍' }] },
+  { id: 'c50', title: '你此刻最想在一面什么颜色的墙上画画？', subtitle: '底色影响创作', type: 'color', options: [{ value: '白墙', display: '⬜' },{ value: '红砖', display: '🧱' },{ value: '灰泥', display: '🩶' },{ value: '黑板', display: '⬛' }] },
 
   // ═══════════════════════════════════════════
-  // 自然 Nature (30)
+  // 自然 Nature (50)
   // ═══════════════════════════════════════════
   { id: 'n01', title: '你的灵魂此刻更接近哪种元素？', subtitle: '感受你内在的流动', type: 'nature', options: [{ value: '水', display: '💧' },{ value: '火', display: '🔥' },{ value: '风', display: '🌬️' },{ value: '土', display: '🪨' }] },
   { id: 'n02', title: '你的内心正处在什么季节？', subtitle: '不是外面的季节', type: 'nature', options: [{ value: '初春', display: '🌱' },{ value: '盛夏', display: '🌻' },{ value: '深秋', display: '🍂' },{ value: '寒冬', display: '❄️' }] },
@@ -84,9 +104,29 @@ const QUESTION_POOL: Question[] = [
   { id: 'n28', title: '此刻你最想触摸什么自然之物？', subtitle: '自然的触感', type: 'nature', options: [{ value: '树皮', display: '🌳' },{ value: '溪水', display: '💧' },{ value: '细沙', display: '🏖️' },{ value: '雪花', display: '❄️' }] },
   { id: 'n29', title: '如果你的成长是一棵树，现在？', subtitle: '树不会着急', type: 'nature', options: [{ value: '扎根', display: '🫚' },{ value: '抽枝', display: '🌿' },{ value: '繁茂', display: '🌳' },{ value: '落叶', display: '🍂' }] },
   { id: 'n30', title: '此刻你更需要阳光还是雨水？', subtitle: '万物各有所需', type: 'nature', options: [{ value: '阳光', display: '☀️' },{ value: '雨水', display: '🌧️' },{ value: '微风', display: '🌬️' },{ value: '雪花', display: '❄️' }] },
+  { id: 'n31', title: '如果此刻你是一条河流？', subtitle: '河流有自己的方向', type: 'nature', options: [{ value: '奔腾', display: '🌊' },{ value: '蜿蜒', display: '🏞️' },{ value: '干涸', display: '🏜️' },{ value: '入海', display: '🌅' }] },
+  { id: 'n32', title: '此刻你最像哪种月光？', subtitle: '月光有不同的温柔', type: 'nature', options: [{ value: '满月', display: '🌕' },{ value: '新月', display: '🌑' },{ value: '残月', display: '🌘' },{ value: '月晕', display: '🌙' }] },
+  { id: 'n33', title: '如果此刻你是一粒种子？', subtitle: '种子蕴含可能', type: 'nature', options: [{ value: '萌芽', display: '🌱' },{ value: '沉睡', display: '🌰' },{ value: '破土', display: '🌿' },{ value: '随风', display: '🌾' }] },
+  { id: 'n34', title: '你此刻最想坐在哪棵树下？', subtitle: '树给人庇护', type: 'nature', options: [{ value: '老榕树', display: '🌳' },{ value: '樱花树', display: '🌸' },{ value: '松树', display: '🌲' },{ value: '枯树', display: '🪵' }] },
+  { id: 'n35', title: '如果此刻你的心是一片叶子？', subtitle: '叶子的旅程', type: 'nature', options: [{ value: '新叶', display: '🍃' },{ value: '落叶', display: '🍂' },{ value: '飘零', display: '🍁' },{ value: '枯叶', display: '🪵' }] },
+  { id: 'n36', title: '此刻你最想听到什么自然之声？', subtitle: '自然在说话', type: 'nature', options: [{ value: '雷声', display: '⛈️' },{ value: '蝉鸣', display: '🦗' },{ value: '浪涛', display: '🌊' },{ value: '蛙声', display: '🐸' }] },
+  { id: 'n37', title: '如果此刻你是一座山？', subtitle: '山有千般姿态', type: 'nature', options: [{ value: '巍峨', display: '🏔️' },{ value: '朦胧', display: '🌫️' },{ value: '孤峰', display: '⛰️' },{ value: '群山', display: '🌄' }] },
+  { id: 'n38', title: '你此刻更像哪种雨？', subtitle: '雨有不同性情', type: 'nature', options: [{ value: '春雨', display: '🌱' },{ value: '暴雨', display: '⛈️' },{ value: '细雨', display: '🌧️' },{ value: '无雨', display: '☀️' }] },
+  { id: 'n39', title: '如果此刻你的心是一个季节的黄昏？', subtitle: '黄昏是一天的总结', type: 'nature', options: [{ value: '春暮', display: '🌸' },{ value: '夏暮', display: '🌇' },{ value: '秋暮', display: '🍂' },{ value: '冬暮', display: '❄️' }] },
+  { id: 'n40', title: '你最想此刻站在哪片水域旁？', subtitle: '水域映射内心', type: 'nature', options: [{ value: '湖泊', display: '🏞️' },{ value: '瀑布', display: '💧' },{ value: '溪涧', display: '🏞️' },{ value: '深海', display: '🐋' }] },
+  { id: 'n41', title: '如果此刻你是一种露珠？', subtitle: '露珠短暂而明亮', type: 'nature', options: [{ value: '晨露', display: '💧' },{ value: '凝霜', display: '❄️' },{ value: '蒸发', display: '💨' },{ value: '滑落', display: '🌿' }] },
+  { id: 'n42', title: '此刻你最像什么状态的土壤？', subtitle: '土壤是生命的底色', type: 'nature', options: [{ value: '湿润', display: '🌱' },{ value: '龟裂', display: '🏜️' },{ value: '肥沃', display: '🌾' },{ value: '板结', display: '🪨' }] },
+  { id: 'n43', title: '如果此刻你是一只候鸟？', subtitle: '候鸟听从召唤', type: 'nature', options: [{ value: '南飞', display: '🦅' },{ value: '北归', display: '🕊️' },{ value: '停留', display: '🐦' },{ value: '迷途', display: '🌀' }] },
+  { id: 'n44', title: '你此刻最想感受哪种风？', subtitle: '风携带不同的消息', type: 'nature', options: [{ value: '春风', display: '🌸' },{ value: '山风', display: '⛰️' },{ value: '海风', display: '🌊' },{ value: '无风', display: '🤫' }] },
+  { id: 'n45', title: '如果此刻你的心是一片竹林？', subtitle: '竹林有它的声音', type: 'nature', options: [{ value: '摇曳', display: '🎋' },{ value: '静谧', display: '🤫' },{ value: '沙响', display: '🍃' },{ value: '新笋', display: '🌱' }] },
+  { id: 'n46', title: '此刻你最想靠近什么自然之火？', subtitle: '火有不同温度', type: 'nature', options: [{ value: '篝火', display: '🔥' },{ value: '萤火', display: '🪲' },{ value: '烛光', display: '🕯️' },{ value: '远火', display: '🌅' }] },
+  { id: 'n47', title: '如果此刻你是大地上的一个印记？', subtitle: '大地记得一切', type: 'nature', options: [{ value: '脚印', display: '👣' },{ value: '车辙', display: '🛤️' },{ value: '裂纹', display: '🏜️' },{ value: '新芽', display: '🌱' }] },
+  { id: 'n48', title: '你此刻更像是清晨还是傍晚？', subtitle: '两者都是过渡', type: 'nature', options: [{ value: '清晨', display: '🌅' },{ value: '傍晚', display: '🌇' },{ value: '正午', display: '☀️' },{ value: '午夜', display: '🌌' }] },
+  { id: 'n49', title: '如果此刻你的心是一种潮汐？', subtitle: '潮汐由月亮牵引', type: 'nature', options: [{ value: '涨潮', display: '🌊' },{ value: '退潮', display: '🏖️' },{ value: '平潮', display: '🏞️' },{ value: '风暴潮', display: '⛈️' }] },
+  { id: 'n50', title: '此刻你最想成为自然中的什么？', subtitle: '成为自然的一部分', type: 'nature', options: [{ value: '一粒沙', display: '🏖️' },{ value: '一滴水', display: '💧' },{ value: '一缕风', display: '🌬️' },{ value: '一束光', display: '✨' }] },
 
   // ═══════════════════════════════════════════
-  // 象征 Symbol (30)
+  // 象征 Symbol (50)
   // ═══════════════════════════════════════════
   { id: 's01', title: '如果抽一张灵魂牌，它会是？', subtitle: '凭直觉选择', type: 'symbol', options: [{ value: '月亮', display: '🌙' },{ value: '星星', display: '⭐' },{ value: '塔', display: '🗼' },{ value: '太阳', display: '☀️' }] },
   { id: 's02', title: '你觉得自己正站在哪扇门前？', subtitle: '想象那扇门的模样', type: 'symbol', options: [{ value: '半开', display: '🚪' },{ value: '紧闭', display: '🔒' },{ value: '敞开', display: '🏛️' },{ value: '隐形', display: '✨' }] },
@@ -118,9 +158,29 @@ const QUESTION_POOL: Question[] = [
   { id: 's28', title: '你的此刻更像哪种仪式？', subtitle: '仪式让人安定', type: 'symbol', options: [{ value: '独行', display: '🚶' },{ value: '守望', display: '👁️' },{ value: '告别', display: '👋' },{ value: '迎接', display: '🤲' }] },
   { id: 's29', title: '如果此刻你是一把尺子？', subtitle: '你在衡量什么', type: 'symbol', options: [{ value: '量距离', display: '📏' },{ value: '量时间', display: '⏳' },{ value: '量心', display: '❤️' },{ value: '已经折断', display: '✂️' }] },
   { id: 's30', title: '此刻你最像哪种光的状态？', subtitle: '光有不同形态', type: 'symbol', options: [{ value: '聚焦', display: '🔦' },{ value: '散开', display: '💡' },{ value: '闪烁', display: '✨' },{ value: '熄灭', display: '🌑' }] },
+  { id: 's31', title: '如果此刻你是一枚印章？', subtitle: '印章留下印记', type: 'symbol', options: [{ value: '朱印', display: '🔴' },{ value: '墨印', display: '⬛' },{ value: '模糊', display: '🌫️' },{ value: '未盖', display: '📝' }] },
+  { id: 's32', title: '你此刻最像哪种笔？', subtitle: '笔写下命运', type: 'symbol', options: [{ value: '毛笔', display: '🖌️' },{ value: '铅笔', display: '✏️' },{ value: '钢笔', display: '🖊️' },{ value: '无墨', display: '📝' }] },
+  { id: 's33', title: '如果此刻你是一面旗帜？', subtitle: '旗帜表明立场', type: 'symbol', options: [{ value: '飘扬', display: '🚩' },{ value: '低垂', display: '🏳️' },{ value: '破损', display: '🧶' },{ value: '藏起', display: '🎒' }] },
+  { id: 's34', title: '你的心此刻像什么锁？', subtitle: '锁保护也封闭', type: 'symbol', options: [{ value: '开启', display: '🔓' },{ value: '锁着', display: '🔒' },{ value: '锈蚀', display: '🪨' },{ value: '无锁', display: '🚪' }] },
+  { id: 's35', title: '如果此刻你是一颗棋子？', subtitle: '棋子在棋盘上', type: 'symbol', options: [{ value: '向前', display: '♟️' },{ value: '驻守', display: '🏰' },{ value: '被吃', display: '⬛' },{ value: '观棋', display: '👁️' }] },
+  { id: 's36', title: '你此刻更像哪种绳结？', subtitle: '绳结有不同含义', type: 'symbol', options: [{ value: '死结', display: '🪢' },{ value: '蝴蝶结', display: '🎀' },{ value: '活结', display: '🪢' },{ value: '散开', display: '🧶' }] },
+  { id: 's37', title: '如果此刻你是一面墙？', subtitle: '墙隔绝也守护', type: 'symbol', options: [{ value: '高墙', display: '🧱' },{ value: '矮墙', display: '🏗️' },{ value: '花墙', display: '🌸' },{ value: '倒塌', display: '🏚️' }] },
+  { id: 's38', title: '你此刻最像哪种钟？', subtitle: '钟声跨越时空', type: 'symbol', options: [{ value: '闹钟', display: '⏰' },{ value: '古钟', display: '🔔' },{ value: '沙漏', display: '⏳' },{ value: '停摆', display: '⏸️' }] },
+  { id: 's39', title: '如果此刻你是一张网？', subtitle: '网捕捉也束缚', type: 'symbol', options: [{ value: '编织中', display: '🧶' },{ value: '已收紧', display: '🪢' },{ value: '破洞', display: '🕸️' },{ value: '撒开', display: '🎣' }] },
+  { id: 's40', title: '你的此刻更像哪种货币？', subtitle: '货币衡量价值', type: 'symbol', options: [{ value: '金币', display: '🪙' },{ value: '纸币', display: '💴' },{ value: '赊账', display: '📝' },{ value: '无用', display: '🗑️' }] },
+  { id: 's41', title: '如果此刻你是一只杯子？', subtitle: '杯子的容量', type: 'symbol', options: [{ value: '满溢', display: '🥛' },{ value: '半杯', display: '🫗' },{ value: '空杯', display: '🫙' },{ value: '碎裂', display: '💔' }] },
+  { id: 's42', title: '你此刻更像哪条路标？', subtitle: '路标指示方向', type: 'symbol', options: [{ value: '向前', display: '⬆️' },{ value: '绕行', display: '🔄' },{ value: '禁止', display: '🚫' },{ value: '迷失', display: '❓' }] },
+  { id: 's43', title: '如果此刻你是一棵盆栽？', subtitle: '盆栽是被驯化的自然', type: 'symbol', options: [{ value: '茂盛', display: '🌿' },{ value: '枯萎', display: '🥀' },{ value: '修剪', display: '✂️' },{ value: '野生', display: '🌱' }] },
+  { id: 's44', title: '你此刻最像什么状态的窗户？', subtitle: '窗户是视角', type: 'symbol', options: [{ value: '打开', display: '🪟' },{ value: '关闭', display: '🚪' },{ value: '模糊', display: '🌫️' },{ value: '破碎', display: '💔' }] },
+  { id: 's45', title: '如果此刻你是一把伞？', subtitle: '伞是移动的屋檐', type: 'symbol', options: [{ value: '撑开', display: '☂️' },{ value: '收起', display: '🌂' },{ value: '翻转', display: '🌪️' },{ value: '遗忘', display: '🚪' }] },
+  { id: 's46', title: '你此刻更像哪种锚？', subtitle: '锚让人安定', type: 'symbol', options: [{ value: '扎根', display: '⚓' },{ value: '漂移', display: '🌊' },{ value: '断裂', display: '💔' },{ value: '无锚', display: '☁️' }] },
+  { id: 's47', title: '如果此刻你是一件披风？', subtitle: '披风是保护也是伪装', type: 'symbol', options: [{ value: '披着', display: '🧥' },{ value: '敞开', display: '👗' },{ value: '遗失', display: '🕳️' },{ value: '隐形', display: '👻' }] },
+  { id: 's48', title: '你此刻更像哪种面具？', subtitle: '面具遮盖也揭示', type: 'symbol', options: [{ value: '笑脸', display: '😊' },{ value: '空白', display: '🫥' },{ value: '半遮', display: '🎭' },{ value: '摘下', display: '🤲' }] },
+  { id: 's49', title: '如果此刻你是一条河的源头？', subtitle: '源头决定流向', type: 'symbol', options: [{ value: '泉涌', display: '💧' },{ value: '融雪', display: '🫠' },{ value: '枯竭', display: '🏜️' },{ value: '地下', display: '🕳️' }] },
+  { id: 's50', title: '你此刻最像哪种节奏的鼓点？', subtitle: '鼓点是心跳的象征', type: 'symbol', options: [{ value: '急促', display: '🥁' },{ value: '缓慢', display: '🪘' },{ value: '停顿', display: '⏸️' },{ value: '静默', display: '🤫' }] },
 
   // ═══════════════════════════════════════════
-  // 感知 Sensation (30)
+  // 感知 Sensation (50)
   // ═══════════════════════════════════════════
   { id: 'b01', title: '你的身体此刻最想做什么？', subtitle: '倾听身体的信号', type: 'sensation', options: [{ value: '蜷缩', display: '🧘' },{ value: '奔跑', display: '🏃' },{ value: '漂浮', display: '🫧' },{ value: '拥抱', display: '🤗' }] },
   { id: 'b02', title: '此刻你的心感觉有多重？', subtitle: '心的重量无法称量', type: 'sensation', options: [{ value: '羽毛', display: '🪶' },{ value: '石头', display: '🪨' },{ value: '水滴', display: '💧' },{ value: '铅块', display: '🧱' }] },
@@ -152,9 +212,29 @@ const QUESTION_POOL: Question[] = [
   { id: 'b28', title: '你的脊椎此刻是什么姿态？', subtitle: '脊椎支撑一切', type: 'sensation', options: [{ value: '挺直', display: '🧍' },{ value: '弯曲', display: '🧎' },{ value: '放松', display: '🛋️' },{ value: '颤抖', display: '🥶' }] },
   { id: 'b29', title: '此刻你最想感受到什么？', subtitle: '身体知道你缺什么', type: 'sensation', options: [{ value: '温暖', display: '🔥' },{ value: '安全', display: '🛡️' },{ value: '自由', display: '🕊️' },{ value: '安静', display: '🤫' }] },
   { id: 'b30', title: '你的身体此刻像什么状态的水？', subtitle: '水随形变', type: 'sensation', options: [{ value: '冰', display: '🧊' },{ value: '温水', display: '🫖' },{ value: '蒸汽', display: '💨' },{ value: '流水', display: '💧' }] },
+  { id: 'b31', title: '此刻你的指尖在渴望什么？', subtitle: '指尖最敏感', type: 'sensation', options: [{ value: '触碰', display: '🤏' },{ value: '温暖', display: '🔥' },{ value: '空握', display: '✊' },{ value: '自由', display: '🖐️' }] },
+  { id: 'b32', title: '你最想此刻闻到什么香味？', subtitle: '香味唤醒一切', type: 'sensation', options: [{ value: '檀香', display: '🪵' },{ value: '橘皮', display: '🍊' },{ value: '薄荷', display: '🍃' },{ value: '无味', display: '🤫' }] },
+  { id: 'b33', title: '此刻你最想用什么节奏呼吸？', subtitle: '呼吸改变一切', type: 'sensation', options: [{ value: '四秒吸', display: '🫁' },{ value: '长叹', display: '😮‍💨' },{ value: '屏息', display: '🤐' },{ value: '自然', display: '🌬️' }] },
+  { id: 'b34', title: '你的额头此刻是什么感觉？', subtitle: '额头反映思绪', type: 'sensation', options: [{ value: '紧皱', display: '😖' },{ value: '舒展', display: '😌' },{ value: '微凉', display: '❄️' },{ value: '温热', display: '🌡️' }] },
+  { id: 'b35', title: '此刻你最想用什么姿势坐着？', subtitle: '姿势是身体的语言', type: 'sensation', options: [{ value: '盘腿', display: '🧘' },{ value: '抱膝', display: '🤗' },{ value: '后仰', display: '🛋️' },{ value: '前倾', display: '🧎' }] },
+  { id: 'b36', title: '你的嘴唇此刻是什么状态？', subtitle: '嘴唇不说谎', type: 'sensation', options: [{ value: '紧抿', display: '😬' },{ value: '微张', display: '😮' },{ value: '微笑', display: '😊' },{ value: '干裂', display: '🏜️' }] },
+  { id: 'b37', title: '此刻你最想感受到什么振动？', subtitle: '振动是身体的共鸣', type: 'sensation', options: [{ value: '心跳', display: '💓' },{ value: '低音', display: '🔊' },{ value: '寂静', display: '🤫' },{ value: '猫呼噜', display: '🐱' }] },
+  { id: 'b38', title: '你的腰背此刻是什么感觉？', subtitle: '腰背承载压力', type: 'sensation', options: [{ value: '僵硬', display: '🪨' },{ value: '柔软', display: '🧘' },{ value: '酸痛', display: '😣' },{ value: '轻松', display: '🌿' }] },
+  { id: 'b39', title: '此刻你最想体验什么味觉？', subtitle: '味觉连接情感', type: 'sensation', options: [{ value: '鲜甜', display: '🍇' },{ value: '酸涩', display: '🍋' },{ value: '咸鲜', display: '🧂' },{ value: '无味', display: '💧' }] },
+  { id: 'b40', title: '你的膝盖此刻想做什么？', subtitle: '膝盖是支撑也是跪拜', type: 'sensation', options: [{ value: '下蹲', display: '🧎' },{ value: '奔跑', display: '🏃' },{ value: '伸直', display: '🧍' },{ value: '颤抖', display: '🥶' }] },
+  { id: 'b41', title: '此刻你最想被什么包围？', subtitle: '包围感是安全感', type: 'sensation', options: [{ value: '泡沫', display: '🫧' },{ value: '棉絮', display: '☁️' },{ value: '水', display: '🌊' },{ value: '黑暗', display: '🌑' }] },
+  { id: 'b42', title: '你的脖子此刻是什么状态？', subtitle: '脖子连接头脑与身体', type: 'sensation', options: [{ value: '紧绷', display: '🪢' },{ value: '松弛', display: '🧘' },{ value: '僵硬', display: '🪨' },{ value: '柔软', display: '🪶' }] },
+  { id: 'b43', title: '此刻你最想听到什么频率的声音？', subtitle: '频率影响心境', type: 'sensation', options: [{ value: '低频', display: '🔊' },{ value: '高频', display: '🔔' },{ value: '白噪音', display: '🌧️' },{ value: '无声', display: '🤫' }] },
+  { id: 'b44', title: '你的手指此刻最想描摹什么？', subtitle: '触摸是认识世界的方式', type: 'sensation', options: [{ value: '轮廓', display: '✋' },{ value: '纹理', display: '🪨' },{ value: '温度', display: '🔥' },{ value: '虚空', display: '🫧' }] },
+  { id: 'b45', title: '此刻你最想嚼什么？', subtitle: '咀嚼释放压力', type: 'sensation', options: [{ value: '脆片', display: '🥐' },{ value: '软糖', display: '🍬' },{ value: '冰块', display: '🧊' },{ value: '不嚼', display: '🤫' }] },
+  { id: 'b46', title: '你的胸腔此刻是什么感觉？', subtitle: '胸腔是情感的容器', type: 'sensation', options: [{ value: '充盈', display: '🫀' },{ value: '空旷', display: '🕳️' },{ value: '紧缩', display: '🪢' },{ value: '敞开', display: '🌸' }] },
+  { id: 'b47', title: '此刻你最想闻到什么自然气息？', subtitle: '自然的气息最治愈', type: 'sensation', options: [{ value: '松脂', display: '🌲' },{ value: '海盐', display: '🌊' },{ value: '青草', display: '🌿' },{ value: '空气', display: '🌬️' }] },
+  { id: 'b48', title: '你的脚底此刻最想踩在什么上？', subtitle: '脚底连接大地', type: 'sensation', options: [{ value: '草地', display: '🌿' },{ value: '沙滩', display: '🏖️' },{ value: '木地板', display: '🪵' },{ value: '水面', display: '💧' }] },
+  { id: 'b49', title: '此刻你最想用什么力度拥抱自己？', subtitle: '拥抱自己是最温柔的事', type: 'sensation', options: [{ value: '紧紧', display: '🤗' },{ value: '轻轻', display: '🪶' },{ value: '拍拍', display: '🤲' },{ value: '不抱', display: '🚶' }] },
+  { id: 'b50', title: '你的身体此刻最渴望什么节奏？', subtitle: '节奏是生命的脉搏', type: 'sensation', options: [{ value: '缓慢', display: '🐌' },{ value: '中等', display: '🚶' },{ value: '快速', display: '🏃' },{ value: '静止', display: '🧘' }] },
 
   // ═══════════════════════════════════════════
-  // 阴影 Shadow (30)
+  // 阴影 Shadow (50)
   // ═══════════════════════════════════════════
   { id: 'd01', title: '此刻你最想逃避的是？', subtitle: '选择最接近的感受', type: 'shadow', options: [{ value: '喧嚣', display: '📢' },{ value: '期待', display: '🎯' },{ value: '责任', display: '⚖️' },{ value: '独处', display: '🚶' }] },
   { id: 'd02', title: '此刻最让你不安的是？', subtitle: '选一个最贴近的', type: 'shadow', options: [{ value: '未知', display: '❓' },{ value: '失去', display: '💔' },{ value: '停滞', display: '🫥' },{ value: '评判', display: '👁️' }] },
@@ -186,9 +266,29 @@ const QUESTION_POOL: Question[] = [
   { id: 'd28', title: '你最不想承认的依赖？', subtitle: '依赖不是软弱', type: 'shadow', options: [{ value: '被需要', display: '💞' },{ value: '被赞美', display: '🏆' },{ value: '被照顾', display: '🤱' },{ value: '无依赖', display: '🚶' }] },
   { id: 'd29', title: '此刻你最想切断的连接？', subtitle: '有些连接在消耗', type: 'shadow', options: [{ value: '期待', display: '🎯' },{ value: '愧疚', display: '😔' },{ value: '比较', display: '⚖️' },{ value: '幻想', display: '💭' }] },
   { id: 'd30', title: '你此刻最需要的勇气是？', subtitle: '勇气有多种形态', type: 'shadow', options: [{ value: '开始的勇气', display: '🚀' },{ value: '放手的勇气', display: '🕊️' },{ value: '示弱的勇气', display: '💔' },{ value: '做自己的勇气', display: '🪞' }] },
+  { id: 'd31', title: '你最想忘却却忘不了的记忆？', subtitle: '记忆是身体的伤疤', type: 'shadow', options: [{ value: '羞耻', display: '😳' },{ value: '遗憾', display: '⏪' },{ value: '恐惧', display: '😨' },{ value: '温暖', display: '🌸' }] },
+  { id: 'd32', title: '你内心最深处的牢笼是什么？', subtitle: '牢笼往往自己造', type: 'shadow', options: [{ value: '恐惧', display: '🔒' },{ value: '规矩', display: '📏' },{ value: '比较', display: '⚖️' },{ value: '没有牢笼', display: '🕊️' }] },
+  { id: 'd33', title: '你最害怕被谁看穿？', subtitle: '被看穿是解脱也是恐惧', type: 'shadow', options: [{ value: '爱人', display: '💕' },{ value: '自己', display: '🪞' },{ value: '所有人', display: '👥' },{ value: '不怕', display: '🤍' }] },
+  { id: 'd34', title: '此刻你最压抑的情绪是？', subtitle: '压抑不会消失', type: 'shadow', options: [{ value: '愤怒', display: '🔥' },{ value: '悲伤', display: '😢' },{ value: '渴望', display: '🌊' },{ value: '没有', display: '🤍' }] },
+  { id: 'd35', title: '你最不愿承认的嫉妒来自？', subtitle: '嫉妒揭示渴望', type: 'shadow', options: [{ value: '他人的自由', display: '🕊️' },{ value: '他人的关系', display: '💕' },{ value: '他人的成就', display: '🏆' },{ value: '没有嫉妒', display: '🤍' }] },
+  { id: 'd36', title: '你此刻最想逃离的牢笼？', subtitle: '有些笼子看不见', type: 'shadow', options: [{ value: '期待', display: '🎯' },{ value: '责任', display: '⚖️' },{ value: '惯性', display: '🔄' },{ value: '自由', display: '🕊️' }] },
+  { id: 'd37', title: '你最想对谁说一声谢谢却说不出口？', subtitle: '未说的话最重', type: 'shadow', options: [{ value: '父母', display: '👨‍👩‍👧' },{ value: '自己', display: '🪞' },{ value: '某个人', display: '👤' },{ value: '已经说了', display: '🙏' }] },
+  { id: 'd38', title: '此刻你最想掩埋的是什么？', subtitle: '掩埋不等于消失', type: 'shadow', options: [{ value: '失望', display: '😔' },{ value: '愤怒', display: '🔥' },{ value: '伤痛', display: '💔' },{ value: '已掩埋', display: '🪨' }] },
+  { id: 'd39', title: '你最害怕在别人面前暴露的？', subtitle: '暴露是脆弱也是勇敢', type: 'shadow', options: [{ value: '无知', display: '❓' },{ value: '软弱', display: '💔' },{ value: '欲望', display: '🔥' },{ value: '不怕', display: '🤍' }] },
+  { id: 'd40', title: '你此刻最想卸下的盔甲？', subtitle: '盔甲保护也沉重', type: 'shadow', options: [{ value: '坚强', display: '🛡️' },{ value: '理性', display: '🧠' },{ value: '幽默', display: '😊' },{ value: '已卸下', display: '🤍' }] },
+  { id: 'd41', title: '你最想原谅却原谅不了的？', subtitle: '原谅需要时间', type: 'shadow', options: [{ value: '背叛', display: '💔' },{ value: '忽视', display: '🌫️' },{ value: '自己', display: '🪞' },{ value: '已原谅', display: '🕊️' }] },
+  { id: 'd42', title: '此刻你最想撕碎的一封信？', subtitle: '有些话不必寄出', type: 'shadow', options: [{ value: '指责', display: '✉️' },{ value: '告白', display: '💌' },{ value: '告别', display: '👋' },{ value: '没有', display: '🤍' }] },
+  { id: 'd43', title: '你最害怕触碰的记忆？', subtitle: '不触碰不代表不存在', type: 'shadow', options: [{ value: '童年', display: '🧒' },{ value: '离别', display: '👋' },{ value: '失败', display: '📉' },{ value: '没有', display: '🤍' }] },
+  { id: 'd44', title: '你此刻最想对命运说什么？', subtitle: '命运也在听', type: 'shadow', options: [{ value: '为什么', display: '❓' },{ value: '谢谢', display: '🙏' },{ value: '够了', display: '✋' },{ value: '沉默', display: '🤫' }] },
+  { id: 'd45', title: '你最不敢对自己承认的需求？', subtitle: '需求不是贪婪', type: 'shadow', options: [{ value: '被需要', display: '💞' },{ value: '被重视', display: '⭐' },{ value: '被保护', display: '🛡️' },{ value: '已承认', display: '🤍' }] },
+  { id: 'd46', title: '你此刻最想打碎的镜子？', subtitle: '镜子映照真实', type: 'shadow', options: [{ value: '自我否定', display: '📉' },{ value: '他人评价', display: '👁️' },{ value: '社会标准', display: '⚖️' },{ value: '不必打碎', display: '🤍' }] },
+  { id: 'd47', title: '你最害怕的沉默是什么？', subtitle: '沉默有千种含义', type: 'shadow', options: [{ value: '被忽视', display: '🌫️' },{ value: '无回应', display: '🕳️' },{ value: '自己的', display: '🤫' },{ value: '不害怕', display: '🤍' }] },
+  { id: 'd48', title: '你此刻最想跨越的鸿沟？', subtitle: '鸿沟在内心深处', type: 'shadow', options: [{ value: '理想与现实', display: '🌈' },{ value: '我与他人', display: '👥' },{ value: '过去与现在', display: '⏪' },{ value: '已跨越', display: '🌉' }] },
+  { id: 'd49', title: '你最不愿放手的幻觉？', subtitle: '幻觉也是一种慰藉', type: 'shadow', options: [{ value: '完美', display: '💎' },{ value: '永恒', display: '♾️' },{ value: '掌控', display: '🎮' },{ value: '已清醒', display: '👁️' }] },
+  { id: 'd50', title: '你此刻最想对暗夜中的自己说？', subtitle: '暗夜是灵魂的镜子', type: 'shadow', options: [{ value: '我看见你了', display: '👁️' },{ value: '没关系', display: '🤍' },{ value: '我在这里', display: '🤗' },{ value: '沉默陪伴', display: '🤫' }] },
 
   // ═══════════════════════════════════════════
-  // 灵性 Spirit (30)
+  // 灵性 Spirit (50)
   // ═══════════════════════════════════════════
   { id: 'p01', title: '如果此刻变成一种动物？', subtitle: '直觉选择', type: 'spirit', options: [{ value: '猫', display: '🐱' },{ value: '鸟', display: '🐦' },{ value: '鱼', display: '🐟' },{ value: '鹿', display: '🦌' }] },
   { id: 'p02', title: '如果心情是一首音乐，它的节奏是？', subtitle: '感受你内心的律动', type: 'spirit', options: [{ value: '低沉', display: '🎵' },{ value: '轻快', display: '🎶' },{ value: '激烈', display: '🥁' },{ value: '安静', display: '🤫' }] },
@@ -220,6 +320,26 @@ const QUESTION_POOL: Question[] = [
   { id: 'p28', title: '你最想此刻种下什么种子？', subtitle: '种子是未来的承诺', type: 'spirit', options: [{ value: '希望', display: '🌱' },{ value: '勇气', display: '🔥' },{ value: '爱', display: '💕' },{ value: '平静', display: '🍃' }] },
   { id: 'p29', title: '如果此刻你是一个寓言故事？', subtitle: '寓言映射真相', type: 'spirit', options: [{ value: '破茧成蝶', display: '🦋' },{ value: '愚公移山', display: '⛰️' },{ value: '守株待兔', display: '🌳' },{ value: '大鹏展翅', display: '🦅' }] },
   { id: 'p30', title: '你此刻最想和宇宙交换什么？', subtitle: '宇宙总是回应', type: 'spirit', options: [{ value: '困惑换智慧', display: '🔮' },{ value: '痛苦换成长', display: '🌱' },{ value: '恐惧换勇气', display: '🦁' },{ value: '什么都不换', display: '🤍' }] },
+  { id: 'p31', title: '如果此刻你的灵魂是一首曲子？', subtitle: '曲子有不同调性', type: 'spirit', options: [{ value: '大调', display: '☀️' },{ value: '小调', display: '🌙' },{ value: '无调', display: '🌀' },{ value: '静音', display: '🤫' }] },
+  { id: 'p32', title: '你最想此刻拥抱什么意象？', subtitle: '意象是灵魂的拥抱', type: 'spirit', options: [{ value: '月亮', display: '🌙' },{ value: '大海', display: '🌊' },{ value: '老树', display: '🌳' },{ value: '虚空', display: '🫧' }] },
+  { id: 'p33', title: '如果此刻你是一种古老的文字？', subtitle: '文字承载文明', type: 'spirit', options: [{ value: '甲骨', display: '🪨' },{ value: '梵文', display: '🕉️' },{ value: '象形', display: '🏛️' },{ value: '未书写', display: '📜' }] },
+  { id: 'p34', title: '你此刻最想听到什么回声？', subtitle: '回声是宇宙的回应', type: 'spirit', options: [{ value: '我在', display: '🔊' },{ value: '安静', display: '🤫' },{ value: '歌唱', display: '🎵' },{ value: '风声', display: '🌬️' }] },
+  { id: 'p35', title: '如果此刻你的灵魂是一条河？', subtitle: '河流奔向远方', type: 'spirit', options: [{ value: '源头', display: '💧' },{ value: '奔流', display: '🌊' },{ value: '入海', display: '🌅' },{ value: '干涸', display: '🏜️' }] },
+  { id: 'p36', title: '你最想此刻看到什么天象？', subtitle: '天象连接宇宙', type: 'spirit', options: [{ value: '日食', display: '🌑' },{ value: '流星雨', display: '☄️' },{ value: '彩虹', display: '🌈' },{ value: '满月', display: '🌕' }] },
+  { id: 'p37', title: '如果此刻你是一种古老的乐器？', subtitle: '古乐穿越时空', type: 'spirit', options: [{ value: '古琴', display: '🎹' },{ value: '编钟', display: '🔔' },{ value: '笛箫', display: '🪈' },{ value: '无声', display: '🤫' }] },
+  { id: 'p38', title: '你此刻最想在什么空间冥想？', subtitle: '空间影响灵性', type: 'spirit', options: [{ value: '山顶', display: '🏔️' },{ value: '水下', display: '🐋' },{ value: '星空', display: '🌌' },{ value: '室内', display: '🏡' }] },
+  { id: 'p39', title: '如果此刻你的灵魂是一只手？', subtitle: '手在创造什么', type: 'spirit', options: [{ value: '伸出', display: '🤲' },{ value: '握紧', display: '✊' },{ value: '放开', display: '🖐️' },{ value: '祈祷', display: '🙏' }] },
+  { id: 'p40', title: '你最想此刻变成什么光？', subtitle: '光有不同的使命', type: 'spirit', options: [{ value: '灯塔', display: '🗼' },{ value: '萤火', display: '🪲' },{ value: '晨光', display: '🌅' },{ value: '暗光', display: '🌑' }] },
+  { id: 'p41', title: '如果此刻你是一个古老的寓言？', subtitle: '寓言蕴含智慧', type: 'spirit', options: [{ value: '凤凰涅槃', display: '🔥' },{ value: '井底之蛙', display: '🐸' },{ value: '庄周梦蝶', display: '🦋' },{ value: '塞翁失马', display: '🐎' }] },
+  { id: 'p42', title: '你此刻最想和哪个时代的灵魂对话？', subtitle: '时空不是距离', type: 'spirit', options: [{ value: '远古', display: '🏛️' },{ value: '未来', display: '🔮' },{ value: '当下', display: '⏰' },{ value: '不对话', display: '🚶' }] },
+  { id: 'p43', title: '如果此刻你的灵魂是一种节奏？', subtitle: '节奏是生命本身', type: 'spirit', options: [{ value: '心跳', display: '💓' },{ value: '潮汐', display: '🌊' },{ value: '呼吸', display: '🌬️' },{ value: '静默', display: '🤫' }] },
+  { id: 'p44', title: '你最想此刻写下什么心愿？', subtitle: '心愿是灵魂的方向', type: 'spirit', options: [{ value: '安宁', display: '🕊️' },{ value: '自由', display: '🦅' },{ value: '连接', display: '🤝' },{ value: '无心愿', display: '🤍' }] },
+  { id: 'p45', title: '如果此刻你是一个梦中的门？', subtitle: '梦中的门通向哪里', type: 'spirit', options: [{ value: '打开', display: '🚪' },{ value: '关闭', display: '🔒' },{ value: '消失', display: '✨' },{ value: '透明', display: '🫧' }] },
+  { id: 'p46', title: '你此刻最想感受什么宇宙力量？', subtitle: '宇宙力量超越个体', type: 'spirit', options: [{ value: '引力', display: '🌌' },{ value: '光速', display: '⚡' },{ value: '寂静', display: '🤫' },{ value: '混沌', display: '🌀' }] },
+  { id: 'p47', title: '如果此刻你的灵魂是一本书？', subtitle: '灵魂有它的篇章', type: 'spirit', options: [{ value: '序章', display: '📖' },{ value: '高潮', display: '🔥' },{ value: '转折', display: '🔄' },{ value: '留白', display: '⬜' }] },
+  { id: 'p48', title: '你最想此刻成为什么象征？', subtitle: '象征超越语言', type: 'spirit', options: [{ value: '灯塔', display: '🗼' },{ value: '种子', display: '🌰' },{ value: '桥梁', display: '🌉' },{ value: '尘埃', display: '✨' }] },
+  { id: 'p49', title: '如果此刻你的灵魂是一滴墨？', subtitle: '墨落纸上是命运', type: 'spirit', options: [{ value: '晕开', display: '💧' },{ value: '凝聚', display: '⬛' },{ value: '消散', display: '💨' },{ value: '未落', display: '🖌️' }] },
+  { id: 'p50', title: '你此刻最想对世界说什么？', subtitle: '世界在倾听', type: 'spirit', options: [{ value: '我在这里', display: '📍' },{ value: '谢谢', display: '🙏' },{ value: '请慢一点', display: '🐌' },{ value: '沉默', display: '🤫' }] },
 ];
 
 export default QUESTION_POOL;

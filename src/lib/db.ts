@@ -19,12 +19,24 @@ function createPrismaClient() {
     return new PrismaClient({ adapter })
   }
 
-  // Fallback: local SQLite
-  return new PrismaClient({
-    log: process.env.NODE_ENV === 'development' ? ['query'] : [],
-  })
+  // Fallback: local SQLite for development
+  return new PrismaClient()
 }
 
-export const db = globalForPrisma.prisma ?? createPrismaClient()
+// Lazy initialization - only create client when actually used
+let _db: PrismaClient | undefined
 
-if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = db
+export function getDb() {
+  if (!_db) {
+    _db = globalForPrisma.prisma ?? createPrismaClient()
+    if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = _db
+  }
+  return _db
+}
+
+// For convenience, also export as db (lazy getter)
+export const db = new Proxy({} as PrismaClient, {
+  get(_, prop) {
+    return (getDb() as any)[prop]
+  }
+})

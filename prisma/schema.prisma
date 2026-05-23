@@ -14,5 +14,6 @@ model CheckIn {
   answersJson   String   
   summary       String   
   encouragement String   
+  book          String   @default("")
   createdAt     DateTime @default(now())
 }

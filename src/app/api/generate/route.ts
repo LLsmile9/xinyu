@@ -32,14 +32,16 @@ export async function POST(req: NextRequest) {
       messages: [
         {
           role: 'assistant',
-          content: `你是一位温暖而富有洞察力的心灵陪伴者，精通荣格心理学、色彩心理学、塔罗象征和东方哲学。根据用户对五个抽象心理问题的回答，生成两段文字：
+          content: `你是一位温暖而富有洞察力的心灵陪伴者，精通荣格心理学、色彩心理学、塔罗象征和东方哲学。根据用户对五个抽象心理问题的回答，生成三段内容：
 
 1. 心情总结（summary）：用温柔、诗意、隐喻的语言，概括用户此刻的心理状态。像写一句诗一样，不超过30个中文字。不要用"你"开头，用第三人称或意象来描述。
 
-2. 哲学鼓励（encouragement）：化用或借鉴一位哲学家或心理学家的思想（如尼采、加缪、荣格、庄子、老子、赫尔曼·黑塞、里尔克等），给予温暖而有力量的鼓励，不超过40个中文字。
+2. 哲学鼓励（encouragement）：化用或借鉴一位哲学家或心理学家的思想（如尼采、加缪、荣格、庄子、老子、赫尔曼·黑塞、里尔克、萨特、弗洛姆等），给予温暖而有力量的鼓励，不超过40个中文字。需要包含这位思想者的名字。
+
+3. 推荐书目（book）：推荐这位哲学家/心理学家的一本与当前心境相关的著作，格式为"作者《中文书名》/ Book Title"，不超过30个字。确保书名真实存在。
 
 请严格按以下JSON格式返回，不要包含任何其他文字：
-{"summary": "...", "encouragement": "..."}`,
+{"summary": "...", "encouragement": "...", "book": "..."}`,
         },
         {
           role: 'user',
@@ -66,11 +68,28 @@ export async function POST(req: NextRequest) {
     } catch {
       const jsonMatch = response.match(/\{[\s\S]*?"summary"[\s\S]*?"encouragement"[\s\S]*?\}/);
       if (jsonMatch) {
-        parsed = JSON.parse(jsonMatch[0]);
-      } else {
+        try {
+          parsed = JSON.parse(jsonMatch[0]);
+        } catch {
+          parsed = null;
+        }
+      }
+      // Try to also match with book field
+      if (!parsed || !parsed.summary) {
+        const jsonMatch2 = response.match(/\{[\s\S]*?"summary"[\s\S]*?"encouragement"[\s\S]*?"book"[\s\S]*?\}/);
+        if (jsonMatch2) {
+          try {
+            parsed = JSON.parse(jsonMatch2[0]);
+          } catch {
+            parsed = null;
+          }
+        }
+      }
+      if (!parsed) {
         parsed = {
           summary: '风穿过林间，叶子轻轻颤动。',
           encouragement: '尼采说：每一个不曾起舞的日子，都是对生命的辜负。',
+          book: '尼采《查拉图斯特拉如是说》/ Thus Spoke Zarathustra',
         };
       }
     }
@@ -78,6 +97,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       summary: parsed.summary || '晨光温柔地落在窗台上。',
       encouragement: parsed.encouragement || '加缪说：在隆冬，我终于知道，我身上有一个不可战胜的夏天。',
+      book: parsed.book || '加缪《西西弗神话》/ The Myth of Sisyphus',
     });
   } catch (error) {
     console.error('Generate API error:', error);

@@ -2,7 +2,6 @@
 
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
@@ -15,17 +14,18 @@ import {
   Sparkles,
   Leaf,
   Heart,
+  Coffee,
+  BookOpen,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
 // ============ Types ============
 type AppView = 'greeting' | 'questions' | 'generating' | 'result' | 'history';
-type QuestionType = 'color' | 'element' | 'tarot' | 'season' | 'landscape' | 'metaphor' | 'shadow' | 'word' | 'text';
+type QuestionType = 'color' | 'element' | 'tarot' | 'season' | 'landscape' | 'metaphor' | 'shadow' | 'body' | 'animal' | 'texture';
 
 interface QuestionOption {
   value: string;
-  label: string;
-  display: string; // emoji or color dot
+  display: string; // emoji
 }
 
 interface Question {
@@ -33,7 +33,7 @@ interface Question {
   title: string;
   subtitle: string;
   type: QuestionType;
-  options?: QuestionOption[];
+  options: QuestionOption[];
 }
 
 interface AnswerPair {
@@ -48,24 +48,25 @@ interface CheckInRecord {
   answersJson: string;
   summary: string;
   encouragement: string;
+  book: string;
   createdAt: string;
 }
 
 // ============ Question Pool ============
 const QUESTION_POOL: Question[] = [
-  // Color psychology (Lüscher color test inspired)
+  // Color psychology
   {
     id: 'color-mood',
     title: '此刻你的内心是什么颜色？',
     subtitle: '闭上眼，感受那个颜色',
     type: 'color',
     options: [
-      { value: '深蓝', label: '深蓝 · 沉思', display: '🔵' },
-      { value: '暖橙', label: '暖橙 · 温情', display: '🟠' },
-      { value: '嫩绿', label: '嫩绿 · 生长', display: '🟢' },
-      { value: '浅紫', label: '浅紫 · 神秘', display: '🟣' },
-      { value: '灰白', label: '灰白 · 空白', display: '⚪' },
-      { value: '深红', label: '深红 · 渴望', display: '🔴' },
+      { value: '深蓝', display: '🔵' },
+      { value: '暖橙', display: '🟠' },
+      { value: '嫩绿', display: '🟢' },
+      { value: '浅紫', display: '🟣' },
+      { value: '灰白', display: '⚪' },
+      { value: '深红', display: '🔴' },
     ],
   },
   {
@@ -74,27 +75,27 @@ const QUESTION_POOL: Question[] = [
     subtitle: '直觉选择，不要思考',
     type: 'color',
     options: [
-      { value: '金色', label: '金色 · 被照亮', display: '🟡' },
-      { value: '湖蓝', label: '湖蓝 · 被安抚', display: '💎' },
-      { value: '翠绿', label: '翠绿 · 被滋养', display: '🌿' },
-      { value: '粉红', label: '粉红 · 被拥抱', display: '💗' },
-      { value: '银灰', label: '银灰 · 被理解', display: '🪞' },
-      { value: '赤红', label: '赤红 · 被点燃', display: '🔥' },
+      { value: '金色', display: '🟡' },
+      { value: '湖蓝', display: '💎' },
+      { value: '翠绿', display: '🌿' },
+      { value: '粉红', display: '💗' },
+      { value: '银灰', display: '🪞' },
+      { value: '赤红', display: '🔥' },
     ],
   },
-  // Tarot / Symbol inspired
+  // Tarot / Symbol
   {
     id: 'tarot-card',
     title: '如果抽一张灵魂牌，它会是？',
     subtitle: '凭直觉选择',
     type: 'tarot',
     options: [
-      { value: '月亮', label: '月亮 · 潜意识', display: '🌙' },
-      { value: '星星', label: '星星 · 希望', display: '⭐' },
-      { value: '塔', label: '塔 · 变革', display: '🗼' },
-      { value: '太阳', label: '太阳 · 光明', display: '☀️' },
-      { value: '隐者', label: '隐者 · 内省', display: '🧙' },
-      { value: '愚者', label: '愚者 · 自由', display: '🃏' },
+      { value: '月亮', display: '🌙' },
+      { value: '星星', display: '⭐' },
+      { value: '塔', display: '🗼' },
+      { value: '太阳', display: '☀️' },
+      { value: '隐者', display: '🧙' },
+      { value: '愚者', display: '🃏' },
     ],
   },
   {
@@ -103,25 +104,25 @@ const QUESTION_POOL: Question[] = [
     subtitle: '想象那扇门的模样',
     type: 'tarot',
     options: [
-      { value: '半开的门', label: '半开的门 · 犹豫', display: '🚪' },
-      { value: '紧闭的门', label: '紧闭的门 · 阻碍', display: '🔒' },
-      { value: '敞开的门', label: '敞开的门 · 机遇', display: '🏛️' },
-      { value: '隐形的门', label: '隐形的门 · 未知', display: '✨' },
-      { value: '旋转的门', label: '旋转的门 · 循环', display: '🌀' },
-      { value: '画中的门', label: '画中的门 · 幻想', display: '🖼️' },
+      { value: '半开的门', display: '🚪' },
+      { value: '紧闭的门', display: '🔒' },
+      { value: '敞开的门', display: '🏛️' },
+      { value: '隐形的门', display: '✨' },
+      { value: '旋转的门', display: '🌀' },
+      { value: '画中的门', display: '🖼️' },
     ],
   },
-  // Nature element (4 elements theory)
+  // Nature element
   {
     id: 'element-soul',
     title: '你的灵魂此刻更接近哪种元素？',
     subtitle: '感受你内在的流动',
     type: 'element',
     options: [
-      { value: '水', label: '水 · 流动与包容', display: '💧' },
-      { value: '火', label: '火 · 热情与转化', display: '🔥' },
-      { value: '风', label: '风 · 自由与思维', display: '🌬️' },
-      { value: '土', label: '土 · 沉稳与承载', display: '🪨' },
+      { value: '水', display: '💧' },
+      { value: '火', display: '🔥' },
+      { value: '风', display: '🌬️' },
+      { value: '土', display: '🪨' },
     ],
   },
   {
@@ -130,23 +131,23 @@ const QUESTION_POOL: Question[] = [
     subtitle: '诚实面对匮乏',
     type: 'element',
     options: [
-      { value: '水的温柔', label: '水的温柔 · 安抚', display: '🌊' },
-      { value: '火的勇气', label: '火的勇气 · 冲破', display: '🔥' },
-      { value: '风的轻盈', label: '风的轻盈 · 放下', display: '🍃' },
-      { value: '土的安定', label: '土的安定 · 扎根', display: '🏔️' },
+      { value: '水的温柔', display: '🌊' },
+      { value: '火的勇气', display: '🔥' },
+      { value: '风的轻盈', display: '🍃' },
+      { value: '土的安定', display: '🏔️' },
     ],
   },
-  // Season / Time metaphor
+  // Season / Time
   {
     id: 'season-soul',
     title: '你的内心正处在什么季节？',
     subtitle: '不是外面的季节',
     type: 'season',
     options: [
-      { value: '初春', label: '初春 · 萌芽', display: '🌱' },
-      { value: '盛夏', label: '盛夏 · 丰盛', display: '🌻' },
-      { value: '深秋', label: '深秋 · 释然', display: '🍂' },
-      { value: '寒冬', label: '寒冬 · 蛰伏', display: '❄️' },
+      { value: '初春', display: '🌱' },
+      { value: '盛夏', display: '🌻' },
+      { value: '深秋', display: '🍂' },
+      { value: '寒冬', display: '❄️' },
     ],
   },
   {
@@ -155,39 +156,55 @@ const QUESTION_POOL: Question[] = [
     subtitle: '不是现在几点',
     type: 'season',
     options: [
-      { value: '黎明', label: '黎明 · 将明', display: '🌅' },
-      { value: '正午', label: '正午 · 鼎盛', display: '🌤️' },
-      { value: '黄昏', label: '黄昏 · 沉思', display: '🌇' },
-      { value: '深夜', label: '深夜 · 独处', display: '🌑' },
+      { value: '黎明', display: '🌅' },
+      { value: '正午', display: '🌤️' },
+      { value: '黄昏', display: '🌇' },
+      { value: '深夜', display: '🌑' },
     ],
   },
-  // Landscape / Imagery
+  // Landscape
   {
     id: 'landscape-place',
     title: '你最想待在什么样的地方？',
     subtitle: '想象那个画面',
     type: 'landscape',
     options: [
-      { value: '海边', label: '海边 · 广阔', display: '🏖️' },
-      { value: '森林', label: '森林 · 隐匿', display: '🌲' },
-      { value: '山顶', label: '山顶 · 超越', display: '⛰️' },
-      { value: '小屋', label: '小屋 · 安全', display: '🏡' },
-      { value: '雨中', label: '雨中 · 净化', display: '🌧️' },
-      { value: '星空下', label: '星空下 · 浩瀚', display: '🌌' },
+      { value: '海边', display: '🏖️' },
+      { value: '森林', display: '🌲' },
+      { value: '山顶', display: '⛰️' },
+      { value: '小屋', display: '🏡' },
+      { value: '雨中', display: '🌧️' },
+      { value: '星空下', display: '🌌' },
     ],
   },
-  // Jungian shadow
+  // Shadow (converted from text to selection)
   {
     id: 'shadow-self',
-    title: '你今天在逃避什么？',
-    subtitle: '对自己诚实，也可以跳过',
-    type: 'text',
+    title: '此刻你最想逃避的是？',
+    subtitle: '选择最接近的感受',
+    type: 'shadow',
+    options: [
+      { value: '喧嚣', display: '📢' },
+      { value: '期待', display: '🎯' },
+      { value: '责任', display: '⚖️' },
+      { value: '独处', display: '🚶' },
+      { value: '选择', display: '🔀' },
+      { value: '沉默', display: '🤐' },
+    ],
   },
   {
     id: 'shadow-fear',
-    title: '此刻最让你不安的是什么？',
-    subtitle: '说出它的名字，它就不再可怕',
-    type: 'text',
+    title: '此刻最让你不安的是？',
+    subtitle: '选一个最贴近的',
+    type: 'shadow',
+    options: [
+      { value: '未知', display: '❓' },
+      { value: '失去', display: '💔' },
+      { value: '停滞', display: '🫥' },
+      { value: '评判', display: '👁️' },
+      { value: '孤独', display: '🌫️' },
+      { value: '改变', display: '🌀' },
+    ],
   },
   // Metaphor
   {
@@ -196,12 +213,12 @@ const QUESTION_POOL: Question[] = [
     subtitle: '用天气描绘内心',
     type: 'metaphor',
     options: [
-      { value: '晴天', label: '晴天 · 明朗', display: '☀️' },
-      { value: '多云', label: '多云 · 踌躇', display: '⛅' },
-      { value: '小雨', label: '小雨 · 低语', display: '🌦️' },
-      { value: '雷暴', label: '雷暴 · 激荡', display: '⛈️' },
-      { value: '薄雾', label: '薄雾 · 模糊', display: '🌫️' },
-      { value: '彩虹', label: '彩虹 · 转变', display: '🌈' },
+      { value: '晴天', display: '☀️' },
+      { value: '多云', display: '⛅' },
+      { value: '小雨', display: '🌦️' },
+      { value: '雷暴', display: '⛈️' },
+      { value: '薄雾', display: '🌫️' },
+      { value: '彩虹', display: '🌈' },
     ],
   },
   {
@@ -210,31 +227,57 @@ const QUESTION_POOL: Question[] = [
     subtitle: '感受你内心的律动',
     type: 'metaphor',
     options: [
-      { value: '缓慢低沉', label: '缓慢低沉 · 舒缓', display: '🎵' },
-      { value: '轻快跳跃', label: '轻快跳跃 · 活泼', display: '🎶' },
-      { value: '激烈急促', label: '激烈急促 · 焦虑', display: '🥁' },
-      { value: '安静留白', label: '安静留白 · 沉默', display: '🤫' },
-      { value: '悠远回响', label: '悠远回响 · 怀念', display: '🎻' },
+      { value: '缓慢低沉', display: '🎵' },
+      { value: '轻快跳跃', display: '🎶' },
+      { value: '激烈急促', display: '🥁' },
+      { value: '安静留白', display: '🤫' },
+      { value: '悠远回响', display: '🎻' },
     ],
   },
-  // Word
+  // Body sensation
   {
-    id: 'word-now',
-    title: '用一个词形容此刻的你',
-    subtitle: '一个词就够了',
-    type: 'word',
+    id: 'body-sense',
+    title: '你的身体此刻最想做什么？',
+    subtitle: '倾听身体的信号',
+    type: 'body',
+    options: [
+      { value: '蜷缩', display: '🧘' },
+      { value: '奔跑', display: '🏃' },
+      { value: '漂浮', display: '🫧' },
+      { value: '拥抱', display: '🤗' },
+      { value: '深呼吸', display: '💨' },
+      { value: '沉睡', display: '😴' },
+    ],
   },
+  // Animal spirit
   {
-    id: 'word-yearn',
-    title: '你内心最深的渴望用一个词',
-    subtitle: '不必完美，直觉回答',
-    type: 'word',
+    id: 'animal-spirit',
+    title: '如果此刻变成一种动物？',
+    subtitle: '直觉选择',
+    type: 'animal',
+    options: [
+      { value: '猫', display: '🐱' },
+      { value: '鸟', display: '🐦' },
+      { value: '鱼', display: '🐟' },
+      { value: '鹿', display: '🦌' },
+      { value: '熊', display: '🐻' },
+      { value: '蝴蝶', display: '🦋' },
+    ],
   },
+  // Texture
   {
-    id: 'word-release',
-    title: '今天你最想放下什么？一个词',
-    subtitle: '写出来，就是放下的开始',
-    type: 'word',
+    id: 'texture-feel',
+    title: '此刻你最想触摸的质感？',
+    subtitle: '用触觉感知情绪',
+    type: 'texture',
+    options: [
+      { value: '柔软毛毯', display: '🧶' },
+      { value: '冰凉石面', display: '🪨' },
+      { value: '温热水流', display: '💧' },
+      { value: '粗糙树皮', display: '🌳' },
+      { value: '光滑丝绸', display: '🎀' },
+      { value: '干燥沙粒', display: '🏜️' },
+    ],
   },
 ];
 
@@ -307,7 +350,6 @@ function HeartCursor() {
     let curX = 0;
     let curY = 0;
 
-    // Add cursor class to body
     document.body.classList.add('heart-cursor-active');
 
     const handleMouseMove = (e: MouseEvent) => {
@@ -356,7 +398,6 @@ function HeartCursor() {
       >
         <Heart className="w-5 h-5 text-sage/60 fill-sage/30 transition-transform duration-200 hover:scale-110" />
       </div>
-      {/* Click burst hearts */}
       {hearts.map((h) => (
         <div
           key={h.id}
@@ -366,6 +407,86 @@ function HeartCursor() {
           <Heart className="w-4 h-4 text-sage/50 fill-sage/25" />
         </div>
       ))}
+    </>
+  );
+}
+
+// ============ Tip / Reward Modal ============
+function TipButton() {
+  const [showTip, setShowTip] = useState(false);
+
+  return (
+    <>
+      <button
+        onClick={() => setShowTip(true)}
+        className="inline-flex items-center gap-1 text-muted-foreground/40 hover:text-sage/70 transition-colors duration-300 font-light text-xs tracking-wider mt-2"
+        aria-label="请我喝杯咖啡"
+      >
+        <Coffee className="w-3 h-3" />
+        <span>请我喝杯咖啡</span>
+      </button>
+
+      <AnimatePresence>
+        {showTip && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="fixed inset-0 z-[10000] flex items-center justify-center bg-foreground/20 backdrop-blur-sm"
+            onClick={() => setShowTip(false)}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              transition={{ duration: 0.3, ease: 'easeOut' }}
+              className="bg-card border border-border rounded-3xl p-8 max-w-xs w-full mx-4 shadow-xl space-y-6 text-center"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="space-y-2">
+                <div className="flex items-center justify-center gap-2">
+                  <Coffee className="w-5 h-5 text-sage/70" />
+                  <h3 className="text-lg font-light text-foreground tracking-wider">感谢你的心意</h3>
+                </div>
+                <p className="text-sm font-light text-muted-foreground leading-relaxed">
+                  你的每一份支持，都是继续创作的温暖动力
+                </p>
+              </div>
+
+              <div className="space-y-4">
+                <div className="p-4 rounded-2xl bg-sage/5 border border-sage/10 space-y-3">
+                  <p className="text-xs font-light text-muted-foreground tracking-wider">微信支付</p>
+                  <div className="w-32 h-32 mx-auto bg-white rounded-xl flex items-center justify-center border border-border/50">
+                    <div className="text-center space-y-1">
+                      <div className="text-3xl">💚</div>
+                      <p className="text-[10px] text-gray-500 font-light">微信扫码支持</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="p-4 rounded-2xl bg-sage/5 border border-sage/10 space-y-2">
+                  <p className="text-xs font-light text-muted-foreground tracking-wider">支付宝</p>
+                  <div className="w-32 h-32 mx-auto bg-white rounded-xl flex items-center justify-center border border-border/50">
+                    <div className="text-center space-y-1">
+                      <div className="text-3xl">💙</div>
+                      <p className="text-[10px] text-gray-500 font-light">支付宝扫码支持</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <Button
+                variant="ghost"
+                onClick={() => setShowTip(false)}
+                className="text-muted-foreground hover:text-foreground font-light text-sm"
+              >
+                关闭
+              </Button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   );
 }
@@ -382,7 +503,7 @@ export default function Home() {
   });
   const [currentQuestions, setCurrentQuestions] = useState<Question[]>([]);
   const [answers, setAnswers] = useState<Record<string, string>>({});
-  const [result, setResult] = useState<{ summary: string; encouragement: string } | null>(null);
+  const [result, setResult] = useState<{ summary: string; encouragement: string; book: string } | null>(null);
   const [history, setHistory] = useState<CheckInRecord[]>([]);
   const [todayCheckIns, setTodayCheckIns] = useState<CheckInRecord[]>([]);
   const [showCursor, setShowCursor] = useState(true);
@@ -403,7 +524,7 @@ export default function Home() {
         setTodayCheckIns(todayRecords);
         if (todayRecords.length > 0) {
           const latest = todayRecords[todayRecords.length - 1];
-          setResult({ summary: latest.summary, encouragement: latest.encouragement });
+          setResult({ summary: latest.summary, encouragement: latest.encouragement, book: latest.book || '' });
         }
       })
       .catch(() => {});
@@ -429,13 +550,11 @@ export default function Home() {
     if (step < currentQuestions.length - 1) {
       setStep((s) => s + 1);
     } else {
-      // Build answer pairs for AI
       const answerPairs: AnswerPair[] = currentQuestions.map((q) => ({
         question: q.title,
-        answer: answers[q.id] || '未填写',
+        answer: answers[q.id] || '未选择',
       }));
 
-      // Generate AI response
       setView('generating');
       fetch('/api/generate', {
         method: 'POST',
@@ -455,13 +574,12 @@ export default function Home() {
             setView('questions');
             return;
           }
-          setResult({ summary: data.summary, encouragement: data.encouragement });
+          setResult({ summary: data.summary, encouragement: data.encouragement, book: data.book || '' });
 
-          // Save to database
           const today = getTodayDate();
           const time = getCurrentTime();
           try {
-            const saveRes = await fetch('/api/checkin', {
+            await fetch('/api/checkin', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
@@ -470,10 +588,9 @@ export default function Home() {
                 answersJson: JSON.stringify(answerPairs),
                 summary: data.summary,
                 encouragement: data.encouragement,
+                book: data.book || '',
               }),
             });
-            const saved = await saveRes.json();
-            // Refresh today's check-ins and history
             const [todayRes, histRes] = await Promise.all([
               fetch(`/api/checkin?date=${today}`),
               fetch('/api/checkin'),
@@ -483,7 +600,7 @@ export default function Home() {
             setTodayCheckIns(todayData);
             setHistory(histData);
           } catch {
-            // Silently fail - result is still shown
+            // Silently fail
           }
 
           setView('result');
@@ -498,10 +615,7 @@ export default function Home() {
   const canProceed = useCallback(() => {
     const q = currentQuestions[step];
     if (!q) return false;
-    // Only color/tarot/element/season/landscape/metaphor with options are required
-    if (q.options && q.options.length > 0) return !!answers[q.id];
-    // text and word are optional
-    return true;
+    return !!answers[q.id];
   }, [step, currentQuestions, answers]);
 
   const handleHistory = useCallback(() => {
@@ -515,10 +629,9 @@ export default function Home() {
   // ============ Render ============
   return (
     <div className="min-h-screen flex flex-col bg-background transition-colors duration-700 relative overflow-hidden">
-      {/* Heart cursor */}
       {showCursor && <HeartCursor />}
 
-      {/* Decorative background elements */}
+      {/* Decorative background */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden" aria-hidden="true">
         <div className="absolute -top-32 -right-32 w-80 h-80 rounded-full bg-sage/[0.04] blur-3xl" />
         <div className="absolute top-1/3 -left-40 w-96 h-96 rounded-full bg-warm/[0.04] blur-3xl" />
@@ -576,7 +689,6 @@ export default function Home() {
                 transition={{ duration: 0.6, ease: 'easeOut' }}
                 className="flex flex-col items-center text-center gap-8"
               >
-                {/* Decorative circle with breathing animation */}
                 <div className="relative">
                   <div className="absolute inset-0 w-24 h-24 rounded-full bg-sage/10 animate-breathe scale-150" />
                   <div className="relative w-24 h-24 rounded-full bg-sage/10 flex items-center justify-center">
@@ -615,7 +727,7 @@ export default function Home() {
                       size="sm"
                       onClick={() => {
                         const latest = todayCheckIns[todayCheckIns.length - 1];
-                        setResult({ summary: latest.summary, encouragement: latest.encouragement });
+                        setResult({ summary: latest.summary, encouragement: latest.encouragement, book: latest.book || '' });
                         setView('result');
                       }}
                       className="text-xs text-sage/60 hover:text-sage font-light"
@@ -672,62 +784,28 @@ export default function Home() {
                         </p>
                       </div>
 
-                      {/* Question Content */}
+                      {/* Option buttons */}
                       <div className="min-h-[180px] flex items-center justify-center">
-                        {/* Option-based questions */}
-                        {currentQuestions[step].options && (
-                          <div className="flex flex-wrap justify-center gap-3">
-                            {currentQuestions[step].options.map((opt) => (
-                              <button
-                                key={opt.value}
-                                onClick={() =>
-                                  setAnswers((a) => ({ ...a, [currentQuestions[step].id]: opt.value }))
-                                }
-                                className={`flex flex-col items-center gap-1.5 px-5 py-4 rounded-2xl border transition-all duration-300 cursor-pointer ${
-                                  answers[currentQuestions[step].id] === opt.value
-                                    ? 'border-sage bg-sage/10 shadow-sm scale-105'
-                                    : 'border-border hover:border-sage/40 hover:bg-sage/5'
-                                }`}
-                              >
-                                <span className="text-2xl">{opt.display}</span>
-                                <span className="text-xs font-light text-muted-foreground whitespace-nowrap">
-                                  {opt.label}
-                                </span>
-                              </button>
-                            ))}
-                          </div>
-                        )}
-
-                        {/* Text questions */}
-                        {currentQuestions[step].type === 'text' && (
-                          <div className="w-full max-w-sm">
-                            <Textarea
-                              value={answers[currentQuestions[step].id] || ''}
-                              onChange={(e) =>
-                                setAnswers((a) => ({ ...a, [currentQuestions[step].id]: e.target.value }))
+                        <div className="flex flex-wrap justify-center gap-3">
+                          {currentQuestions[step].options.map((opt) => (
+                            <button
+                              key={opt.value}
+                              onClick={() =>
+                                setAnswers((a) => ({ ...a, [currentQuestions[step].id]: opt.value }))
                               }
-                              placeholder="写点什么..."
-                              className="w-full min-h-[120px] rounded-2xl border-border bg-card/50 font-light text-base resize-none focus:ring-sage/30 focus:border-sage/50 placeholder:text-muted-foreground/40"
-                              maxLength={200}
-                            />
-                          </div>
-                        )}
-
-                        {/* Word questions */}
-                        {currentQuestions[step].type === 'word' && (
-                          <div className="w-full max-w-sm">
-                            <input
-                              type="text"
-                              value={answers[currentQuestions[step].id] || ''}
-                              onChange={(e) =>
-                                setAnswers((a) => ({ ...a, [currentQuestions[step].id]: e.target.value }))
-                              }
-                              placeholder="一个词..."
-                              maxLength={10}
-                              className="w-full text-center text-2xl font-light bg-transparent border-b-2 border-border focus:border-sage/60 focus:outline-none py-4 transition-colors duration-300 placeholder:text-muted-foreground/30"
-                            />
-                          </div>
-                        )}
+                              className={`flex flex-col items-center gap-1.5 px-5 py-4 rounded-2xl border transition-all duration-300 cursor-pointer ${
+                                answers[currentQuestions[step].id] === opt.value
+                                  ? 'border-sage bg-sage/10 shadow-sm scale-105'
+                                  : 'border-border hover:border-sage/40 hover:bg-sage/5'
+                              }`}
+                            >
+                              <span className="text-2xl">{opt.display}</span>
+                              <span className="text-xs font-light text-muted-foreground whitespace-nowrap">
+                                {opt.value}
+                              </span>
+                            </button>
+                          ))}
+                        </div>
                       </div>
                     </motion.div>
                   )}
@@ -794,7 +872,7 @@ export default function Home() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ duration: 0.8, ease: 'easeOut' }}
-                className="flex flex-col items-center text-center gap-10 py-4"
+                className="flex flex-col items-center text-center gap-8 py-4"
               >
                 {/* Date & time */}
                 <div className="space-y-1">
@@ -808,7 +886,7 @@ export default function Home() {
                   )}
                 </div>
 
-                {/* Summary - the poetic line */}
+                {/* Summary */}
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -830,7 +908,7 @@ export default function Home() {
                   </div>
                 </motion.div>
 
-                {/* Encouragement - the philosophical line */}
+                {/* Encouragement + Book */}
                 <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
@@ -845,9 +923,19 @@ export default function Home() {
                   <p className="text-base font-light text-muted-foreground leading-relaxed">
                     {result.encouragement}
                   </p>
+
+                  {/* Book recommendation */}
+                  {result.book && (
+                    <div className="flex items-center justify-center gap-2 pt-2">
+                      <BookOpen className="w-3 h-3 text-sage/40" />
+                      <p className="text-xs font-light text-sage/50 tracking-wide italic">
+                        {result.book}
+                      </p>
+                    </div>
+                  )}
                 </motion.div>
 
-                {/* Today's journey (if multiple check-ins) */}
+                {/* Today's journey */}
                 {todayCheckIns.length > 1 && (
                   <motion.div
                     initial={{ opacity: 0 }}
@@ -874,12 +962,12 @@ export default function Home() {
                   </motion.div>
                 )}
 
-                {/* Actions */}
+                {/* Actions + Tip */}
                 <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: 1.5, duration: 0.6 }}
-                  className="flex flex-col items-center gap-3 pt-4"
+                  className="flex flex-col items-center gap-3 pt-2"
                 >
                   <Button
                     onClick={handleStart}
@@ -896,6 +984,7 @@ export default function Home() {
                     <ArrowLeft className="w-4 h-4 mr-1" />
                     返回
                   </Button>
+                  <TipButton />
                 </motion.div>
               </motion.div>
             )}
@@ -934,7 +1023,6 @@ export default function Home() {
                 ) : (
                   <ScrollArea className="max-h-[65vh]">
                     <div className="space-y-6 pr-2 custom-scrollbar">
-                      {/* Group by date */}
                       {Object.entries(
                         history.reduce<Record<string, CheckInRecord[]>>((acc, r) => {
                           if (!acc[r.date]) acc[r.date] = [];
@@ -965,6 +1053,12 @@ export default function Home() {
                               <p className="text-sm font-light text-muted-foreground leading-relaxed">
                                 {record.encouragement}
                               </p>
+                              {record.book && (
+                                <div className="flex items-center gap-1.5 pt-1">
+                                  <BookOpen className="w-3 h-3 text-sage/30" />
+                                  <p className="text-xs font-light text-sage/40 italic">{record.book}</p>
+                                </div>
+                              )}
                             </motion.div>
                           ))}
                         </div>

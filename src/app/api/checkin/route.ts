@@ -4,7 +4,7 @@ import { db } from '@/lib/db';
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { date, time, answersJson, summary, encouragement } = body;
+    const { date, time, answersJson, summary, encouragement, book } = body;
 
     if (!date || !time || !answersJson || !summary || !encouragement) {
       return NextResponse.json(
@@ -20,6 +20,7 @@ export async function POST(req: NextRequest) {
         answersJson: typeof answersJson === 'string' ? answersJson : JSON.stringify(answersJson),
         summary,
         encouragement,
+        book: book || '',
       },
     });
 

@@ -332,6 +332,12 @@ function getCurrentTime(): string {
   return `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
 }
 
+function getWeekdayChinese(): string {
+  const d = new Date();
+  const weekdays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+  return weekdays[d.getDay()];
+}
+
 function formatDateChinese(dateStr: string): string {
   const d = new Date(dateStr + 'T00:00:00');
   const weekdays = ['日', '一', '二', '三', '四', '五', '六'];
@@ -495,12 +501,7 @@ function TipButton() {
 export default function Home() {
   const [view, setView] = useState<AppView>('greeting');
   const [step, setStep] = useState(0);
-  const [isDark, setIsDark] = useState(() => {
-    if (typeof window !== 'undefined') {
-      return window.matchMedia('(prefers-color-scheme: dark)').matches;
-    }
-    return false;
-  });
+  const [isDark, setIsDark] = useState(false);
   const [currentQuestions, setCurrentQuestions] = useState<Question[]>([]);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [result, setResult] = useState<{ summary: string; encouragement: string; book: string } | null>(null);
@@ -514,10 +515,7 @@ export default function Home() {
     return false;
   });
 
-  // Apply dark mode on mount
-  useEffect(() => {
-    if (isDark) document.documentElement.classList.add('dark');
-  }, []);
+  // Dark mode is off by default - user can toggle manually
 
   // Load history on mount
   useEffect(() => {
@@ -703,11 +701,11 @@ export default function Home() {
                 </div>
 
                 <div className="space-y-3">
-                  <h1 className="text-3xl sm:text-4xl font-light tracking-wide text-foreground">
+                  <h1 className="text-3xl sm:text-4xl font-light tracking-wide text-foreground font-serif">
                     {getGreeting()}
                   </h1>
                   <p className="text-muted-foreground font-light text-lg">
-                    {formatDateChinese(getTodayDate())}
+                    {getWeekdayChinese()}
                   </p>
                 </div>
 
@@ -724,23 +722,18 @@ export default function Home() {
                 </Button>
 
                 {todayCheckIns.length > 0 && (
-                  <div className="space-y-2">
-                    <p className="text-xs text-muted-foreground/60 font-light">
-                      今天已经记录了 {todayCheckIns.length} 次
-                    </p>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => {
-                        const latest = todayCheckIns[todayCheckIns.length - 1];
-                        setResult({ summary: latest.summary, encouragement: latest.encouragement, book: latest.book || '' });
-                        setView('result');
-                      }}
-                      className="text-xs text-sage/60 hover:text-sage font-light"
-                    >
-                      查看上一次心语
-                    </Button>
-                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      const latest = todayCheckIns[todayCheckIns.length - 1];
+                      setResult({ summary: latest.summary, encouragement: latest.encouragement, book: latest.book || '' });
+                      setView('result');
+                    }}
+                    className="text-xs text-sage/60 hover:text-sage font-light"
+                  >
+                    查看上一次心语
+                  </Button>
                 )}
               </motion.div>
             )}
@@ -883,13 +876,8 @@ export default function Home() {
                 {/* Date & time */}
                 <div className="space-y-1">
                   <p className="text-sm font-light text-muted-foreground tracking-wider">
-                    {formatDateChinese(getTodayDate())}
+                    {getWeekdayChinese()}
                   </p>
-                  {todayCheckIns.length > 1 && (
-                    <p className="text-xs font-light text-muted-foreground/50">
-                      今日第 {todayCheckIns.length} 次心语
-                    </p>
-                  )}
                 </div>
 
                 {/* Summary */}
@@ -904,7 +892,7 @@ export default function Home() {
                     <Leaf className="w-3.5 h-3.5 text-sage/40" />
                     <div className="w-8 h-px bg-sage/30" />
                   </div>
-                  <p className="text-xl sm:text-3xl font-light text-foreground leading-relaxed tracking-wide max-w-xs">
+                  <p className="text-lg sm:text-xl font-light text-foreground leading-relaxed tracking-wide max-w-xs font-serif">
                     {result.summary}
                   </p>
                   <div className="flex items-center gap-4 justify-center">
@@ -926,7 +914,7 @@ export default function Home() {
                     <span className="text-xs tracking-widest font-light">给你的话</span>
                     <Heart className="w-3.5 h-3.5" />
                   </div>
-                  <p className="text-sm sm:text-base font-light text-muted-foreground leading-relaxed">
+                  <p className="text-lg sm:text-xl font-light text-muted-foreground leading-relaxed font-serif">
                     {result.encouragement}
                   </p>
 
@@ -940,33 +928,6 @@ export default function Home() {
                     </div>
                   )}
                 </motion.div>
-
-                {/* Today's journey */}
-                {todayCheckIns.length > 1 && (
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 1.3, duration: 0.8 }}
-                    className="space-y-3 max-w-sm w-full"
-                  >
-                    <p className="text-xs tracking-widest font-light text-sage/50">今日心迹</p>
-                    <div className="space-y-2">
-                      {todayCheckIns.map((c, i) => (
-                        <div
-                          key={c.id}
-                          className="flex items-start gap-3 text-left"
-                        >
-                          <span className="text-xs font-light text-muted-foreground/50 mt-0.5 shrink-0 w-10">
-                            {c.time}
-                          </span>
-                          <p className="text-sm font-light text-muted-foreground/70 leading-relaxed">
-                            {c.summary}
-                          </p>
-                        </div>
-                      ))}
-                    </div>
-                  </motion.div>
-                )}
 
                 {/* Actions + Tip */}
                 <motion.div

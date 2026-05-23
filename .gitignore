@@ -39,3 +39,12 @@ next-env.d.ts
 .z-ai-config
 /skills/
 /prompt
+.zscripts/
+Caddyfile
+examples/
+mini-services/
+download/
+server.sh
+bun.lock
+agent-ctx/
+worklog.md

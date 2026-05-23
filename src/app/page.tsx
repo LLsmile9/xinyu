@@ -15,7 +15,6 @@ import {
   Leaf,
   Heart,
   BookOpen,
-  Share2,
   Download,
 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -226,26 +225,13 @@ function HeartCursor() {
 
 
 
-// ============ Share Card Component ============
-function ShareCard({ result, weekday, cardRef }: {
+// ============ Share Card Content (pure inline styles for html2canvas) ============
+function ShareCardContent({ result, weekday }: {
   result: { summary: string; encouragement: string; book: string };
   weekday: string;
-  cardRef: React.RefObject<HTMLDivElement | null>;
 }) {
   return (
-    <div
-      ref={cardRef}
-      style={{
-        width: 360,
-        padding: 40,
-        background: '#FAF8F5',
-        fontFamily: '"Noto Serif SC", serif',
-        position: 'fixed',
-        left: '-9999px',
-        top: 0,
-        zIndex: -1,
-      }}
-    >
+    <>
       {/* Top decorative line */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, marginBottom: 32 }}>
         <div style={{ width: 40, height: 1, background: 'rgba(124, 154, 142, 0.3)' }} />
@@ -325,7 +311,7 @@ function ShareCard({ result, weekday, cardRef }: {
         <span style={{ fontSize: 10, color: 'rgba(124, 154, 142, 0.35)', letterSpacing: 3 }}>温柔地对待每一刻</span>
         <div style={{ width: 60, height: 1, background: 'rgba(124, 154, 142, 0.2)' }} />
       </div>
-    </div>
+    </>
   );
 }
 
@@ -352,6 +338,7 @@ export default function Home() {
   // Ref for share card DOM element
   const shareCardRef = useRef<HTMLDivElement | null>(null);
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
+  const [showSharePreview, setShowSharePreview] = useState(false);
 
   // Dark mode is off by default - user can toggle manually
 
@@ -792,43 +779,11 @@ export default function Home() {
                     <ChevronRight className="w-4 h-4 ml-1" />
                   </Button>
                   <Button
-                    onClick={async () => {
-                      if (!shareCardRef.current || !result) return;
-                      setIsGeneratingImage(true);
-                      try {
-                        // Small delay to ensure the hidden card renders
-                        await new Promise((r) => setTimeout(r, 100));
-                        const canvas = await html2canvas(shareCardRef.current, {
-                          scale: 2,
-                          backgroundColor: '#FAF8F5',
-                          useCORS: true,
-                          logging: false,
-                        });
-                        const link = document.createElement('a');
-                        link.download = `心语_${getWeekdayChinese()}.png`;
-                        link.href = canvas.toDataURL('image/png');
-                        link.click();
-                        toast.success('图片已保存');
-                      } catch {
-                        toast.error('生成图片失败');
-                      } finally {
-                        setIsGeneratingImage(false);
-                      }
-                    }}
-                    disabled={isGeneratingImage}
-                    className="rounded-full px-6 h-11 sm:h-9 font-light tracking-wider bg-warm/80 hover:bg-warm text-warm-foreground transition-all duration-300 active:scale-95 disabled:opacity-50"
+                    onClick={() => setShowSharePreview(true)}
+                    className="rounded-full px-6 h-11 sm:h-9 font-light tracking-wider bg-warm/80 hover:bg-warm text-warm-foreground transition-all duration-300 active:scale-95"
                   >
-                    {isGeneratingImage ? (
-                      <>
-                        <Sparkles className="w-4 h-4 mr-1.5 animate-spin" />
-                        生成中...
-                      </>
-                    ) : (
-                      <>
-                        <Download className="w-4 h-4 mr-1.5" />
-                        保存分享图
-                      </>
-                    )}
+                    <Download className="w-4 h-4 mr-1.5" />
+                    保存分享图
                   </Button>
                   <Button
                     variant="ghost"
@@ -840,14 +795,93 @@ export default function Home() {
                   </Button>
                 </motion.div>
 
-                {/* Hidden share card for image generation */}
-                {result && (
-                  <ShareCard
-                    result={result}
-                    weekday={getWeekdayChinese()}
-                    cardRef={shareCardRef}
-                  />
-                )}
+                {/* Share Preview Modal */}
+                <AnimatePresence>
+                  {showSharePreview && result && (
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.3 }}
+                      className="fixed inset-0 z-[10000] flex flex-col items-center justify-center bg-foreground/30 backdrop-blur-sm p-4"
+                      onClick={() => setShowSharePreview(false)}
+                    >
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                        transition={{ duration: 0.3, ease: 'easeOut' }}
+                        className="flex flex-col items-center gap-4 max-h-[90vh]"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        {/* Preview card */}
+                        <div
+                          ref={shareCardRef}
+                          style={{
+                            width: 320,
+                            padding: 36,
+                            background: '#FAF8F5',
+                            fontFamily: '"Noto Serif SC", serif',
+                            borderRadius: 16,
+                            boxShadow: '0 4px 24px rgba(0,0,0,0.08)',
+                          }}
+                        >
+                          <ShareCardContent result={result} weekday={getWeekdayChinese()} />
+                        </div>
+
+                        {/* Action buttons */}
+                        <div className="flex gap-3">
+                          <Button
+                            onClick={async () => {
+                              if (!shareCardRef.current) return;
+                              setIsGeneratingImage(true);
+                              try {
+                                await new Promise((r) => setTimeout(r, 200));
+                                const canvas = await html2canvas(shareCardRef.current, {
+                                  scale: 2,
+                                  backgroundColor: '#FAF8F5',
+                                  useCORS: true,
+                                  logging: false,
+                                });
+                                const link = document.createElement('a');
+                                link.download = `心语_${getWeekdayChinese()}.png`;
+                                link.href = canvas.toDataURL('image/png');
+                                link.click();
+                                toast.success('图片已保存');
+                              } catch {
+                                toast.error('生成图片失败，请截图保存');
+                              } finally {
+                                setIsGeneratingImage(false);
+                                setShowSharePreview(false);
+                              }
+                            }}
+                            disabled={isGeneratingImage}
+                            className="rounded-full px-6 h-11 font-light tracking-wider bg-sage hover:bg-sage/90 text-sage-foreground transition-all duration-300 active:scale-95 disabled:opacity-50"
+                          >
+                            {isGeneratingImage ? (
+                              <>
+                                <Sparkles className="w-4 h-4 mr-1.5 animate-spin" />
+                                生成中...
+                              </>
+                            ) : (
+                              <>
+                                <Download className="w-4 h-4 mr-1.5" />
+                                保存到相册
+                              </>
+                            )}
+                          </Button>
+                          <Button
+                            variant="outline"
+                            onClick={() => setShowSharePreview(false)}
+                            className="rounded-full px-6 h-11 font-light tracking-wider"
+                          >
+                            关闭
+                          </Button>
+                        </div>
+                      </motion.div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </motion.div>
             )}
 

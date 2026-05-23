@@ -20,6 +20,43 @@ export const turso = globalForDb.tursoClient ?? createTursoClient()
 
 if (process.env.NODE_ENV !== 'production') globalForDb.tursoClient = turso
 
+// ============ Auto-create tables if they don't exist ============
+let tablesInitialized = false;
+
+export async function ensureTables(): Promise<void> {
+  if (tablesInitialized) return;
+  tablesInitialized = true;
+
+  try {
+    await turso.execute(`
+      CREATE TABLE IF NOT EXISTS Visitor (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        visitorId TEXT NOT NULL UNIQUE,
+        firstSeen TEXT NOT NULL,
+        lastSeen TEXT NOT NULL,
+        visits INTEGER NOT NULL DEFAULT 1
+      )
+    `);
+    await turso.execute(`
+      CREATE TABLE IF NOT EXISTS CheckIn (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        date TEXT NOT NULL,
+        time TEXT NOT NULL,
+        answersJson TEXT NOT NULL,
+        summary TEXT NOT NULL,
+        encouragement TEXT NOT NULL,
+        book TEXT NOT NULL DEFAULT '',
+        visitorId TEXT NOT NULL DEFAULT '',
+        createdAt TEXT NOT NULL
+      )
+    `);
+    console.log('✅ Tables ensured');
+  } catch (e) {
+    console.error('❌ Failed to create tables:', e);
+    tablesInitialized = false; // Retry next time
+  }
+}
+
 // ============ Database helper functions ============
 
 export interface CheckInRecord {

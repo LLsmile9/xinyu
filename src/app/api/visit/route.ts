@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { upsertVisitor } from '@/lib/db';
+import { upsertVisitor, ensureTables } from '@/lib/db';
 
 export async function POST(req: NextRequest) {
   try {
+    await ensureTables();
     const body = await req.json();
     const { visitorId } = body;
 

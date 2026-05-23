@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { turso } from '@/lib/db';
+import { turso, ensureTables } from '@/lib/db';
 
 // Daily quotes pool
 const QUOTES = [
@@ -57,6 +57,7 @@ function formatDateChinese(): string {
 
 export async function GET() {
   try {
+    await ensureTables();
     const sendKey = process.env.SCT_SEND_KEY;
     if (!sendKey) {
       return NextResponse.json({ error: '未配置 SCT_SEND_KEY' }, { status: 500 });

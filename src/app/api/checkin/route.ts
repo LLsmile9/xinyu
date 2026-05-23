@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createCheckIn, getAllCheckIns, getCheckInsByDate } from '@/lib/db';
+import { createCheckIn, getAllCheckIns, getCheckInsByDate, ensureTables } from '@/lib/db';
 
 export async function POST(req: NextRequest) {
   try {
+    await ensureTables();
     const body = await req.json();
     const { date, time, answersJson, summary, encouragement, book, visitorId } = body;
 
@@ -24,10 +25,10 @@ export async function POST(req: NextRequest) {
     });
 
     return NextResponse.json({ success: true });
-  } catch (error) {
+  } catch (error: any) {
     console.error('CheckIn POST error:', error);
     return NextResponse.json(
-      { error: '保存失败，请稍后再试' },
+      { error: '保存失败，请稍后再试', detail: error?.message || String(error) },
       { status: 500 }
     );
   }
@@ -35,6 +36,7 @@ export async function POST(req: NextRequest) {
 
 export async function GET(req: NextRequest) {
   try {
+    await ensureTables();
     const url = new URL(req.url);
     const date = url.searchParams.get('date');
 

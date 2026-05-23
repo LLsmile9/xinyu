@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
-import { turso } from '@/lib/db';
+import { turso, ensureTables } from '@/lib/db';
 
 export async function GET() {
+  await ensureTables();
   const debug = {
     DATABASE_URL: process.env.DATABASE_URL ? '✅ set' : '❌ not set',
     DATABASE_AUTH_TOKEN: process.env.DATABASE_AUTH_TOKEN ? '✅ set' : '❌ not set',
@@ -51,9 +52,25 @@ export async function GET() {
     aiStatus = `❌ ${e.message}`;
   }
 
+  // Check tables
+  let tableStatus = 'not tested';
+  try {
+    const tables = await turso.execute("SELECT name FROM sqlite_master WHERE type='table'");
+    const tableNames = tables.rows.map((r: any) => r.name);
+    tableStatus = `✅ tables: ${tableNames.join(', ')}`;
+
+    // Try to insert and check CheckIn
+    const countResult = await turso.execute('SELECT COUNT(*) as count FROM CheckIn');
+    const visitorCount = await turso.execute('SELECT COUNT(*) as count FROM Visitor');
+    tableStatus += ` | CheckIn: ${(countResult.rows[0] as any).count} rows, Visitor: ${(visitorCount.rows[0] as any).count} rows`;
+  } catch (e: any) {
+    tableStatus = `❌ ${e.message}`;
+  }
+
   return NextResponse.json({
     env: debug,
     database: dbStatus,
+    tables: tableStatus,
     ai: aiStatus,
   });
 }

@@ -15,8 +15,11 @@ import {
   Leaf,
   Heart,
   BookOpen,
+  Share2,
+  Download,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import html2canvas from 'html2canvas';
 
 // ============ Types ============
 type AppView = 'greeting' | 'questions' | 'generating' | 'result' | 'history';
@@ -223,6 +226,109 @@ function HeartCursor() {
 
 
 
+// ============ Share Card Component ============
+function ShareCard({ result, weekday, cardRef }: {
+  result: { summary: string; encouragement: string; book: string };
+  weekday: string;
+  cardRef: React.RefObject<HTMLDivElement | null>;
+}) {
+  return (
+    <div
+      ref={cardRef}
+      style={{
+        width: 360,
+        padding: 40,
+        background: '#FAF8F5',
+        fontFamily: '"Noto Serif SC", serif',
+        position: 'fixed',
+        left: '-9999px',
+        top: 0,
+        zIndex: -1,
+      }}
+    >
+      {/* Top decorative line */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, marginBottom: 32 }}>
+        <div style={{ width: 40, height: 1, background: 'rgba(124, 154, 142, 0.3)' }} />
+        <span style={{ fontSize: 12, color: 'rgba(124, 154, 142, 0.5)', letterSpacing: 4 }}>晨间心语</span>
+        <div style={{ width: 40, height: 1, background: 'rgba(124, 154, 142, 0.3)' }} />
+      </div>
+
+      {/* Weekday */}
+      <p style={{ fontSize: 13, color: 'rgba(124, 154, 142, 0.6)', textAlign: 'center', letterSpacing: 3, marginBottom: 28 }}>
+        {weekday}
+      </p>
+
+      {/* Summary */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, marginBottom: 20 }}>
+        <div style={{ width: 28, height: 1, background: 'rgba(124, 154, 142, 0.25)' }} />
+        <span style={{ fontSize: 10, color: 'rgba(124, 154, 142, 0.4)' }}>🌿</span>
+        <div style={{ width: 28, height: 1, background: 'rgba(124, 154, 142, 0.25)' }} />
+      </div>
+      <p style={{
+        fontSize: 15,
+        color: 'rgba(80, 80, 80, 0.75)',
+        textAlign: 'center',
+        lineHeight: 1.8,
+        letterSpacing: 1,
+        fontWeight: 300,
+        marginBottom: 24,
+        maxWidth: 280,
+        marginLeft: 'auto',
+        marginRight: 'auto',
+      }}>
+        {result.summary}
+      </p>
+
+      {/* Divider */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, marginBottom: 28 }}>
+        <div style={{ width: 28, height: 1, background: 'rgba(124, 154, 142, 0.25)' }} />
+        <span style={{ fontSize: 10, color: 'rgba(124, 154, 142, 0.4)' }}>🌿</span>
+        <div style={{ width: 28, height: 1, background: 'rgba(124, 154, 142, 0.25)' }} />
+      </div>
+
+      {/* Encouragement label */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 16 }}>
+        <span style={{ fontSize: 11, color: 'rgba(124, 154, 142, 0.6)' }}>💚</span>
+        <span style={{ fontSize: 12, color: 'rgba(124, 154, 142, 0.7)', letterSpacing: 4, fontWeight: 300 }}>给你的话</span>
+        <span style={{ fontSize: 11, color: 'rgba(124, 154, 142, 0.6)' }}>💚</span>
+      </div>
+
+      {/* Encouragement */}
+      <p style={{
+        fontSize: 20,
+        color: 'rgba(40, 40, 40, 0.9)',
+        textAlign: 'center',
+        lineHeight: 1.8,
+        fontWeight: 300,
+        letterSpacing: 1,
+        marginBottom: 20,
+        maxWidth: 300,
+        marginLeft: 'auto',
+        marginRight: 'auto',
+      }}>
+        {result.encouragement}
+      </p>
+
+      {/* Book */}
+      {result.book && (
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, marginBottom: 36 }}>
+          <span style={{ fontSize: 10, color: 'rgba(124, 154, 142, 0.35)' }}>📖</span>
+          <p style={{ fontSize: 11, color: 'rgba(124, 154, 142, 0.45)', fontStyle: 'italic', letterSpacing: 1 }}>
+            {result.book}
+          </p>
+        </div>
+      )}
+
+      {/* Bottom branding */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, marginTop: 8 }}>
+        <div style={{ width: 60, height: 1, background: 'rgba(124, 154, 142, 0.2)' }} />
+        <span style={{ fontSize: 10, color: 'rgba(124, 154, 142, 0.35)', letterSpacing: 3 }}>温柔地对待每一刻</span>
+        <div style={{ width: 60, height: 1, background: 'rgba(124, 154, 142, 0.2)' }} />
+      </div>
+    </div>
+  );
+}
+
 // ============ Main Component ============
 export default function Home() {
   const [view, setView] = useState<AppView>('greeting');
@@ -243,6 +349,9 @@ export default function Home() {
 
   // Ref for auto-advance timer
   const autoAdvanceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Ref for share card DOM element
+  const shareCardRef = useRef<HTMLDivElement | null>(null);
+  const [isGeneratingImage, setIsGeneratingImage] = useState(false);
 
   // Dark mode is off by default - user can toggle manually
 
@@ -668,7 +777,7 @@ export default function Home() {
                   )}
                 </motion.div>
 
-                {/* Actions + Tip */}
+                {/* Actions */}
                 <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
@@ -683,6 +792,45 @@ export default function Home() {
                     <ChevronRight className="w-4 h-4 ml-1" />
                   </Button>
                   <Button
+                    onClick={async () => {
+                      if (!shareCardRef.current || !result) return;
+                      setIsGeneratingImage(true);
+                      try {
+                        // Small delay to ensure the hidden card renders
+                        await new Promise((r) => setTimeout(r, 100));
+                        const canvas = await html2canvas(shareCardRef.current, {
+                          scale: 2,
+                          backgroundColor: '#FAF8F5',
+                          useCORS: true,
+                          logging: false,
+                        });
+                        const link = document.createElement('a');
+                        link.download = `心语_${getWeekdayChinese()}.png`;
+                        link.href = canvas.toDataURL('image/png');
+                        link.click();
+                        toast.success('图片已保存');
+                      } catch {
+                        toast.error('生成图片失败');
+                      } finally {
+                        setIsGeneratingImage(false);
+                      }
+                    }}
+                    disabled={isGeneratingImage}
+                    className="rounded-full px-6 h-11 sm:h-9 font-light tracking-wider bg-warm/80 hover:bg-warm text-warm-foreground transition-all duration-300 active:scale-95 disabled:opacity-50"
+                  >
+                    {isGeneratingImage ? (
+                      <>
+                        <Sparkles className="w-4 h-4 mr-1.5 animate-spin" />
+                        生成中...
+                      </>
+                    ) : (
+                      <>
+                        <Download className="w-4 h-4 mr-1.5" />
+                        保存分享图
+                      </>
+                    )}
+                  </Button>
+                  <Button
                     variant="ghost"
                     onClick={() => setView('greeting')}
                     className="text-muted-foreground hover:text-foreground font-light h-11 sm:h-9 active:bg-sage/5"
@@ -691,6 +839,15 @@ export default function Home() {
                     返回
                   </Button>
                 </motion.div>
+
+                {/* Hidden share card for image generation */}
+                {result && (
+                  <ShareCard
+                    result={result}
+                    weekday={getWeekdayChinese()}
+                    cardRef={shareCardRef}
+                  />
+                )}
               </motion.div>
             )}
 

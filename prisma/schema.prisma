@@ -15,5 +15,14 @@ model CheckIn {
   summary       String   
   encouragement String   
   book          String   @default("")
+  visitorId     String   @default("")
   createdAt     DateTime @default(now())
+}
+
+model Visitor {
+  id        String   @id @default(cuid())
+  visitorId String   @unique
+  firstSeen DateTime @default(now())
+  lastSeen  DateTime @default(now())
+  visits    Int      @default(1)
 }

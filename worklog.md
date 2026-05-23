@@ -140,3 +140,30 @@ Stage Summary:
 - Preview shows exactly what will be downloaded (Canvas-rendered image)
 - Mobile users can long-press the preview image to save
 - Lint passes, dev server running correctly
+
+---
+Task ID: 7
+Agent: Main Agent
+Task: Add anonymous visitor tracking to know how many people have used the app
+
+Work Log:
+- Added Visitor model to Prisma schema (visitorId unique, firstSeen, lastSeen, visits count)
+- Added visitorId field to CheckIn model (default empty string for backwards compat)
+- Created /api/visit POST endpoint with upsert logic (create new visitor or increment visits count)
+- Created /api/stats GET endpoint returning: totalVisitors, totalCheckIns, todayVisitors, todayCheckIns, daily breakdown (7 days)
+- Frontend: added getOrCreateVisitorId() helper that generates anonymous ID (v_timestamp_random) stored in localStorage
+- On page mount, calls /api/visit to register the visit
+- Check-in now includes visitorId in POST body
+- Added Stats interface and state in Home component
+- handleHistory now also fetches /api/stats
+- Added stats display card in history view showing: 访问(total visitors), 心语(total check-ins), 今日(today visitors)
+- Stats card uses warm sage styling with Users/Heart/Sun icons
+- Database was reset and re-pushed for clean schema
+- Dev server restarted for Prisma client regeneration
+
+Stage Summary:
+- Anonymous visitor tracking is now functional
+- Each device/browser gets a unique ID stored in localStorage
+- Visitor count, check-in count, and today's visitors are displayed in the history view
+- No personal data collected - only anonymous device identifiers
+- All APIs tested and working

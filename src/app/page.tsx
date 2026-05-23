@@ -16,6 +16,7 @@ import {
   Heart,
   BookOpen,
   Download,
+  Users,
 } from 'lucide-react';
 import { toast } from 'sonner';
 // html2canvas removed - using Canvas API for reliable image generation
@@ -32,6 +33,13 @@ interface CheckInRecord {
   encouragement: string;
   book: string;
   createdAt: string;
+}
+
+interface Stats {
+  totalVisitors: number;
+  totalCheckIns: number;
+  todayVisitors: number;
+  todayCheckIns: number;
 }
 
 // ============ Import Questions ============
@@ -407,6 +415,22 @@ async function generateShareImage(
   return canvas.toDataURL('image/png');
 }
 
+// ============ Visitor ID helper ============
+const VISITOR_KEY = 'xinyu_visitor_id';
+
+function getOrCreateVisitorId(): string {
+  try {
+    const existing = localStorage.getItem(VISITOR_KEY);
+    if (existing) return existing;
+  } catch {}
+  // Generate anonymous ID: v_ + timestamp + random
+  const id = 'v_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 8);
+  try {
+    localStorage.setItem(VISITOR_KEY, id);
+  } catch {}
+  return id;
+}
+
 // ============ Main Component ============
 export default function Home() {
   const [view, setView] = useState<AppView>('greeting');
@@ -429,11 +453,24 @@ export default function Home() {
   const autoAdvanceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
   const [shareImageUri, setShareImageUri] = useState<string | null>(null);
+  const [stats, setStats] = useState<Stats | null>(null);
+
+  // Visitor ID (generated once, stored in localStorage)
+  const visitorIdRef = useRef<string>('');
 
   // Dark mode is off by default - user can toggle manually
 
-  // Load history on mount
+  // Load history on mount + register visit
   useEffect(() => {
+    // Generate visitor ID and register this visit
+    const vid = getOrCreateVisitorId();
+    visitorIdRef.current = vid;
+    fetch('/api/visit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ visitorId: vid }),
+    }).catch(() => {});
+
     fetch('/api/checkin')
       .then((r) => r.json())
       .then((data: CheckInRecord[]) => {
@@ -514,6 +551,7 @@ export default function Home() {
                 summary: data.summary,
                 encouragement: data.encouragement,
                 book: data.book || '',
+                visitorId: visitorIdRef.current,
               }),
             });
             const [todayRes, histRes] = await Promise.all([
@@ -541,6 +579,10 @@ export default function Home() {
     fetch('/api/checkin')
       .then((r) => r.json())
       .then((data) => setHistory(data))
+      .catch(() => {});
+    fetch('/api/stats')
+      .then((r) => r.json())
+      .then((data: Stats) => setStats(data))
       .catch(() => {});
     setView('history');
   }, []);
@@ -1000,6 +1042,29 @@ export default function Home() {
                   <h2 className="text-lg font-light text-foreground tracking-wider">心语记录</h2>
                   <div className="w-16" />
                 </div>
+
+                {/* Stats card */}
+                {stats && (
+                  <div className="flex items-center justify-center gap-6 py-3 px-4 rounded-2xl border border-sage/10 bg-sage/[0.03]">
+                    <div className="flex items-center gap-1.5">
+                      <Users className="w-3.5 h-3.5 text-sage/50" />
+                      <span className="text-xs text-muted-foreground/60 font-light">访问</span>
+                      <span className="text-sm text-sage/70 font-light">{stats.totalVisitors}</span>
+                    </div>
+                    <div className="w-px h-3 bg-sage/10" />
+                    <div className="flex items-center gap-1.5">
+                      <Heart className="w-3.5 h-3.5 text-sage/50" />
+                      <span className="text-xs text-muted-foreground/60 font-light">心语</span>
+                      <span className="text-sm text-sage/70 font-light">{stats.totalCheckIns}</span>
+                    </div>
+                    <div className="w-px h-3 bg-sage/10" />
+                    <div className="flex items-center gap-1.5">
+                      <Sun className="w-3.5 h-3.5 text-sage/50" />
+                      <span className="text-xs text-muted-foreground/60 font-light">今日</span>
+                      <span className="text-sm text-sage/70 font-light">{stats.todayVisitors}</span>
+                    </div>
+                  </div>
+                )}
 
                 {history.length === 0 ? (
                   <div className="text-center py-16 space-y-4">

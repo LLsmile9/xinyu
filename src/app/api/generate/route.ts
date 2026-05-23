@@ -3,7 +3,7 @@ import ZAI from 'z-ai-web-dev-sdk';
 
 export async function POST(req: NextRequest) {
   try {
-    const { answers, previousCheckIns } = await req.json();
+    const { answers, previousCheckIns, allPreviousEncouragements } = await req.json();
 
     if (!answers || !Array.isArray(answers) || answers.length === 0) {
       return NextResponse.json(
@@ -28,6 +28,15 @@ export async function POST(req: NextRequest) {
       comparisonContext = `\n\n今天之前的心语记录：\n${previousSummaries}\n\n请在生成总结时，与今天之前的记录做一个温和的对照或呼应，体现出心情的变化轨迹。`;
     }
 
+    // Build list of previously used philosophers to avoid repetition
+    let usedPhilosophersContext = '';
+    if (allPreviousEncouragements && Array.isArray(allPreviousEncouragements) && allPreviousEncouragements.length > 0) {
+      const usedList = allPreviousEncouragements
+        .map((c: { encouragement: string; book: string }, i: number) => `${i + 1}. ${c.encouragement} | ${c.book}`)
+        .join('\n');
+      usedPhilosophersContext = `\n\n【非常重要】以下是该用户之前已经收到过的心语和哲学家，你绝对不能重复使用这些哲学家，必须选择列表中未出现过的其他哲学家：\n${usedList}`;
+    }
+
     const completion = await zai.chat.completions.create({
       messages: [
         {
@@ -38,10 +47,12 @@ export async function POST(req: NextRequest) {
 
 【重要】绝对不要直接拼接或堆砌用户选择的词语！例如用户选了"湖蓝"和"正午"，不能写"湖蓝正午"，而要转化为诗意意象，如"午后湖面泛着静谧的光"。要把用户选择的元素消化、融合、升华，变成一个全新的诗意画面或意境。
 
-2. 哲学鼓励（encouragement）：从以下50位思想家/哲学家中随机选取一位（每次必须不同，避免重复），化用或借鉴其核心思想，给予温暖而有力量的鼓励，不超过40个中文字。必须包含这位思想者的名字。
+2. 哲学鼓励（encouragement）：从以下50位思想家/哲学家中选取一位，化用或借鉴其核心思想，给予温暖而有力量的鼓励，不超过40个中文字。必须包含这位思想者的名字。
 
-可选思想家列表（每次从中随机选一位，确保多样性）：
-荣格、毛姆、弗兰克尔、阿德勒、马可·奥勒留、王阳明、托尔斯泰、陀思妥耶夫斯基、克尔凯郭尔、传道书/箴言、尼采、加缪、庄子、老子、赫尔曼·黑塞、里尔克、萨特、弗洛姆、孔子、苏格拉底、柏拉图、亚里士多德、伊壁鸠鲁、塞涅卡、爱比克泰德、蒙田、帕斯卡、卢梭、康德、叔本华、克尔凯郭尔、海德格尔、维特根斯坦、波伏娃、汉娜·阿伦特、罗曼·罗兰、纪伯伦、泰戈尔、梭罗、惠特曼、普鲁斯特、卡夫卡、博尔赫斯、三岛由纪夫、川端康成、夏目漱石、鲁迅、林语堂、丰子恺、朱光潜
+【关键规则】绝对不能重复使用用户之前已经收到过的哲学家！如果用户附上了"已经收到过的心语"列表，你必须从中识别出已使用的哲学家，并选择一位全新的、未出现过的哲学家。只有在所有50位都用完后才允许重复。
+
+可选思想家列表：
+荣格、毛姆、弗兰克尔、阿德勒、马可·奥勒留、王阳明、托尔斯泰、陀思妥耶夫斯基、克尔凯郭尔、传道书/箴言、尼采、加缪、庄子、老子、赫尔曼·黑塞、里尔克、萨特、弗洛姆、孔子、苏格拉底、柏拉图、亚里士多德、伊壁鸠鲁、塞涅卡、爱比克泰德、蒙田、帕斯卡、卢梭、康德、叔本华、海德格尔、维特根斯坦、波伏娃、汉娜·阿伦特、罗曼·罗兰、纪伯伦、泰戈尔、梭罗、惠特曼、普鲁斯特、卡夫卡、博尔赫斯、三岛由纪夫、川端康成、夏目漱石、鲁迅、林语堂、丰子恺、朱光潜
 
 3. 推荐书目（book）：推荐这位思想家的一本与当前心境相关的著作，格式为"作者《中文书名》/ Book Title"，不超过30个字。确保书名真实存在。
 
@@ -50,7 +61,7 @@ export async function POST(req: NextRequest) {
         },
         {
           role: 'user',
-          content: `这是我此刻的心理画像：\n${currentAnswers}${comparisonContext}`,
+          content: `这是我此刻的心理画像：\n${currentAnswers}${comparisonContext}${usedPhilosophersContext}`,
         },
       ],
       thinking: { type: 'disabled' },

@@ -818,6 +818,12 @@ export default function Home() {
           previousCheckIns: todayCheckIns.map((c) => ({
             time: c.time,
             summary: c.summary,
+            encouragement: c.encouragement,
+            book: c.book,
+          })),
+          allPreviousEncouragements: history.map((c) => ({
+            encouragement: c.encouragement,
+            book: c.book,
           })),
         }),
       })
@@ -864,7 +870,7 @@ export default function Home() {
           setView('questions');
         });
     }
-  }, [step, currentQuestions, answers, todayCheckIns]);
+  }, [step, currentQuestions, answers, todayCheckIns, history]);
 
   const canProceed = useCallback(() => {
     const q = currentQuestions[step];

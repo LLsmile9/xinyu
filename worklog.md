@@ -39,3 +39,20 @@ Stage Summary:
 - Question pool: 17 → 31 questions, supports 30 non-repeat clicks
 - Philosopher list: expanded from ~8 to 50 in AI prompt
 - Tip button: "打赏碎银子" with Coins icon
+
+---
+Task ID: 3
+Agent: Main Agent
+Task: Make AI-generated 心语 (encouragement+book) non-repeat across 30 check-ins
+
+Work Log:
+- Added `allPreviousEncouragements` field to the generate API request, containing all past encouragement+book records
+- Modified AI prompt to explicitly instruct avoiding previously used philosophers
+- The prompt now shows the user's past 心语 list and says "绝对不能重复使用用户之前已经收到过的哲学家"
+- Added `history` to handleNext useCallback dependencies to fix React Compiler lint error
+- Lint passes, page loads (HTTP 200)
+
+Stage Summary:
+- AI now receives full history of past encouragements/books
+- Prompt explicitly tells AI to avoid repeating philosophers from past check-ins
+- With 50 philosophers in the list, 30+ unique check-ins are guaranteed

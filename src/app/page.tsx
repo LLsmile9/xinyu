@@ -418,21 +418,15 @@ function getOrCreateVisitorId(): string {
 }
 
 // ============ Load lang from localStorage ============
-function getInitialLang(): Lang {
-  if (typeof window === 'undefined') return 'zh';
-  try {
-    const stored = localStorage.getItem(LANG_KEY);
-    if (stored === 'en' || stored === 'zh') return stored;
-  } catch {}
-  return 'zh';
-}
+// Always default to 'zh' for SSR consistency to avoid hydration mismatch
+// The actual lang is loaded in useEffect after mount
 
 // ============ Main Component ============
 export default function Home() {
   const [view, setView] = useState<AppView>('greeting');
   const [step, setStep] = useState(0);
   const [isDark, setIsDark] = useState(false);
-  const [lang, setLang] = useState<Lang>(getInitialLang);
+  const [lang, setLang] = useState<Lang>('zh');
   const [currentQuestions, setCurrentQuestions] = useState<Question[]>([]);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [result, setResult] = useState<{ summary: string; encouragement: string; book: string } | null>(null);
@@ -455,7 +449,17 @@ export default function Home() {
   // Visitor ID (generated once, stored in localStorage)
   const visitorIdRef = useRef<string>('');
 
-  // Persist lang to localStorage
+  // Load lang from localStorage on mount (safe for SSR - runs only on client)
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem(LANG_KEY);
+      if (stored === 'en' || stored === 'zh') {
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- reading from localStorage on mount is safe
+        setLang(stored);
+      }
+    } catch {}
+  }, []);
+
   useEffect(() => {
     try {
       localStorage.setItem(LANG_KEY, lang);
@@ -617,13 +621,13 @@ export default function Home() {
         <div className="flex items-center gap-2">
           <Button
             variant="ghost"
-            size="icon"
+            size="sm"
             onClick={toggleLang}
-            className="rounded-full w-10 h-10 sm:w-9 sm:h-9 text-muted-foreground hover:text-foreground active:bg-sage/10"
+            className="rounded-full h-9 px-2.5 text-muted-foreground hover:text-foreground active:bg-sage/10 gap-1"
             aria-label={t(lang, 'aria.toggleLanguage')}
           >
-            <Languages className="w-4 h-4 sm:w-4 sm:h-4" />
-            <span className="absolute text-[9px] font-medium" style={{ marginTop: '12px', fontSize: '8px' }}>
+            <Languages className="w-3.5 h-3.5" />
+            <span className="text-xs font-medium">
               {lang === 'zh' ? 'EN' : '中'}
             </span>
           </Button>

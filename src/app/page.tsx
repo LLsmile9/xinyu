@@ -17,9 +17,13 @@ import {
   BookOpen,
   Download,
   Users,
+  Languages,
 } from 'lucide-react';
 import { toast } from 'sonner';
 // html2canvas removed - using Canvas API for reliable image generation
+
+// ============ i18n ============
+import { type Lang, t, getGreetingText, getWeekday, formatDate } from '@/lib/i18n';
 
 // ============ Types ============
 type AppView = 'greeting' | 'questions' | 'generating' | 'result' | 'history';
@@ -44,6 +48,7 @@ interface Stats {
 
 // ============ Import Questions ============
 import QUESTION_POOL, { QUESTION_CATEGORIES, type QuestionType, type Question } from '@/lib/questions';
+import QUESTION_POOL_EN from '@/lib/questions-en';
 
 // ============ Answer pair type ============
 interface AnswerPair {
@@ -53,6 +58,7 @@ interface AnswerPair {
 
 // ============ Per-category non-repeat tracking ============
 const USED_QUESTIONS_KEY = 'xinyu_used_questions_v3';
+const LANG_KEY = 'xinyu_lang';
 
 type UsedMap = Record<string, string[]>; // category -> list of used question IDs
 
@@ -74,7 +80,8 @@ function saveUsedMap(map: UsedMap): void {
 }
 
 // Pick `count` questions, one from each of `count` different categories, avoiding repeats
-function pickRandomQuestions(count: number): Question[] {
+function pickRandomQuestions(count: number, lang: Lang): Question[] {
+  const pool = lang === 'en' ? QUESTION_POOL_EN : QUESTION_POOL;
   const usedMap = getUsedMap();
   const picked: Question[] = [];
   const usedCategories = new Set<QuestionType>();
@@ -87,7 +94,7 @@ function pickRandomQuestions(count: number): Question[] {
     if (usedCategories.has(cat)) continue;
 
     const usedIds = new Set(usedMap[cat] || []);
-    const poolQuestions = QUESTION_POOL.filter((q) => q.type === cat);
+    const poolQuestions = pool.filter((q) => q.type === cat);
     const unused = poolQuestions.filter((q) => !usedIds.has(q.id));
 
     let question: Question;
@@ -110,7 +117,7 @@ function pickRandomQuestions(count: number): Question[] {
 
   // If we still need more questions (edge case: fewer categories than count)
   if (picked.length < count) {
-    const remaining = QUESTION_POOL.filter((q) => !picked.includes(q));
+    const remaining = pool.filter((q) => !picked.includes(q));
     const shuffled = remaining.sort(() => Math.random() - 0.5);
     for (const q of shuffled) {
       if (picked.length >= count) break;
@@ -123,16 +130,6 @@ function pickRandomQuestions(count: number): Question[] {
 }
 
 // ============ Helper ============
-function getGreeting(): string {
-  const hour = new Date().getHours();
-  if (hour < 6) return '夜深了';
-  if (hour < 9) return '早安';
-  if (hour < 12) return '上午好';
-  if (hour < 14) return '中午好';
-  if (hour < 18) return '下午好';
-  return '晚上好';
-}
-
 function getTodayDate(): string {
   const now = new Date();
   const y = now.getFullYear();
@@ -144,18 +141,6 @@ function getTodayDate(): string {
 function getCurrentTime(): string {
   const now = new Date();
   return `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-}
-
-function getWeekdayChinese(): string {
-  const d = new Date();
-  const weekdays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
-  return weekdays[d.getDay()];
-}
-
-function formatDateChinese(dateStr: string): string {
-  const d = new Date(dateStr + 'T00:00:00');
-  const weekdays = ['日', '一', '二', '三', '四', '五', '六'];
-  return `${d.getMonth() + 1}月${d.getDate()}日 周${weekdays[d.getDay()]}`;
 }
 
 // ============ Heart Cursor Component ============
@@ -236,7 +221,8 @@ function HeartCursor() {
 // ============ Canvas-based Share Image Generator ============
 async function generateShareImage(
   result: { summary: string; encouragement: string; book: string },
-  weekday: string
+  weekday: string,
+  lang: Lang
 ): Promise<string> {
   // Wait for fonts to load
   await document.fonts.ready;
@@ -258,7 +244,7 @@ async function generateShareImage(
     ctx.font = `${weight} ${size * DPR}px ${FF}`;
   };
 
-  // Chinese text wrapping → returns array of lines
+  // Text wrapping → returns array of lines
   function wrapText(text: string, maxPx: number, fontSize: number, fontWeight = '300'): string[] {
     setFont(fontSize, fontWeight);
     const lines: string[] = [];
@@ -353,8 +339,8 @@ async function generateShareImage(
   // --- Second pass: draw content ---
   let y = PAD * DPR;
 
-  // Top branding: —— 晨间心语 ——
-  drawLineTextLine('晨  间  心  语', y, 12, 'rgba(124,154,142,0.5)', 40);
+  // Top branding: —— Morning Heart Words / 晨间心语 ——
+  drawLineTextLine(t(lang, 'share.brandTitle'), y, 12, 'rgba(124,154,142,0.5)', 40);
   y += 32 * DPR;
 
   // Weekday
@@ -383,11 +369,11 @@ async function generateShareImage(
   drawLineTextLine('·  ·  ·', y, 8, 'rgba(124,154,142,0.35)', 28, 'rgba(124,154,142,0.2)');
   y += 24 * DPR;
 
-  // "给你的话" label
+  // "Words for You" / "给你的话" label
   y += SECTION_GAP * DPR;
   setFont(12, '300');
   ctx.fillStyle = 'rgba(124,154,142,0.7)';
-  drawCenteredText('♡  给你的话  ♡', y);
+  drawCenteredText(t(lang, 'share.wordsForYou'), y);
   y += 22 * DPR;
 
   // Encouragement
@@ -410,7 +396,7 @@ async function generateShareImage(
 
   // Bottom branding
   y += 40 * DPR - 12 * DPR; // gap before branding
-  drawLineTextLine('温柔地对待每一刻', y, 10, 'rgba(124,154,142,0.35)', 60, 'rgba(124,154,142,0.15)');
+  drawLineTextLine(t(lang, 'share.tagline'), y, 10, 'rgba(124,154,142,0.35)', 60, 'rgba(124,154,142,0.15)');
 
   return canvas.toDataURL('image/png');
 }
@@ -431,11 +417,22 @@ function getOrCreateVisitorId(): string {
   return id;
 }
 
+// ============ Load lang from localStorage ============
+function getInitialLang(): Lang {
+  if (typeof window === 'undefined') return 'zh';
+  try {
+    const stored = localStorage.getItem(LANG_KEY);
+    if (stored === 'en' || stored === 'zh') return stored;
+  } catch {}
+  return 'zh';
+}
+
 // ============ Main Component ============
 export default function Home() {
   const [view, setView] = useState<AppView>('greeting');
   const [step, setStep] = useState(0);
   const [isDark, setIsDark] = useState(false);
+  const [lang, setLang] = useState<Lang>(getInitialLang);
   const [currentQuestions, setCurrentQuestions] = useState<Question[]>([]);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [result, setResult] = useState<{ summary: string; encouragement: string; book: string } | null>(null);
@@ -457,6 +454,13 @@ export default function Home() {
 
   // Visitor ID (generated once, stored in localStorage)
   const visitorIdRef = useRef<string>('');
+
+  // Persist lang to localStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem(LANG_KEY, lang);
+    } catch {}
+  }, [lang]);
 
   // Dark mode is off by default - user can toggle manually
 
@@ -494,13 +498,17 @@ export default function Home() {
     });
   }, []);
 
+  const toggleLang = useCallback(() => {
+    setLang((prev) => prev === 'zh' ? 'en' : 'zh');
+  }, []);
+
   const handleStart = useCallback(() => {
-    const questions = pickRandomQuestions(5);
+    const questions = pickRandomQuestions(5, lang);
     setCurrentQuestions(questions);
     setAnswers({});
     setStep(0);
     setView('questions');
-  }, []);
+  }, [lang]);
 
   const handleNext = useCallback(() => {
     if (step < currentQuestions.length - 1) {
@@ -508,7 +516,7 @@ export default function Home() {
     } else {
       const answerPairs: AnswerPair[] = currentQuestions.map((q) => ({
         question: q.title,
-        answer: answers[q.id] || '未选择',
+        answer: answers[q.id] || t(lang, 'misc.unselected'),
       }));
 
       setView('generating');
@@ -527,6 +535,7 @@ export default function Home() {
             encouragement: c.encouragement,
             book: c.book,
           })),
+          lang,
         }),
       })
         .then((r) => r.json())
@@ -569,11 +578,11 @@ export default function Home() {
           setView('result');
         })
         .catch(() => {
-          toast.error('生成失败，请稍后再试');
+          toast.error(t(lang, 'error.generateFailed'));
           setView('questions');
         });
     }
-  }, [step, currentQuestions, answers, todayCheckIns, history]);
+  }, [step, currentQuestions, answers, todayCheckIns, history, lang]);
 
   const handleHistory = useCallback(() => {
     fetch('/api/checkin')
@@ -603,15 +612,27 @@ export default function Home() {
       <header className="relative z-10 flex items-center justify-between px-4 py-3 sm:px-8 sm:py-4 pt-safe">
         <div className="flex items-center gap-2 text-muted-foreground">
           <Leaf className="w-4 h-4 text-sage" />
-          <span className="text-sm tracking-widest font-light">心语</span>
+          <span className="text-sm tracking-widest font-light">{t(lang, 'header.brand')}</span>
         </div>
         <div className="flex items-center gap-2">
           <Button
             variant="ghost"
             size="icon"
+            onClick={toggleLang}
+            className="rounded-full w-10 h-10 sm:w-9 sm:h-9 text-muted-foreground hover:text-foreground active:bg-sage/10"
+            aria-label={t(lang, 'aria.toggleLanguage')}
+          >
+            <Languages className="w-4 h-4 sm:w-4 sm:h-4" />
+            <span className="absolute text-[9px] font-medium" style={{ marginTop: '12px', fontSize: '8px' }}>
+              {lang === 'zh' ? 'EN' : '中'}
+            </span>
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={() => setShowCursor((p) => !p)}
             className="rounded-full w-10 h-10 sm:w-9 sm:h-9 text-muted-foreground hover:text-foreground active:bg-sage/10"
-            aria-label="切换爱心鼠标"
+            aria-label={t(lang, 'aria.toggleHeartCursor')}
           >
             <Heart className={`w-4.5 h-4.5 sm:w-4 sm:h-4 ${showCursor ? 'fill-sage/40 text-sage' : ''}`} />
           </Button>
@@ -620,7 +641,7 @@ export default function Home() {
             size="icon"
             onClick={handleHistory}
             className="rounded-full w-10 h-10 sm:w-9 sm:h-9 text-muted-foreground hover:text-foreground active:bg-sage/10"
-            aria-label="查看历史记录"
+            aria-label={t(lang, 'aria.viewHistory')}
           >
             <History className="w-4.5 h-4.5 sm:w-4 sm:h-4" />
           </Button>
@@ -629,7 +650,7 @@ export default function Home() {
             size="icon"
             onClick={toggleDark}
             className="rounded-full w-10 h-10 sm:w-9 sm:h-9 text-muted-foreground hover:text-foreground active:bg-sage/10"
-            aria-label="切换深色模式"
+            aria-label={t(lang, 'aria.toggleDarkMode')}
           >
             {isDark ? <Sun className="w-4.5 h-4.5 sm:w-4 sm:h-4" /> : <Moon className="w-4.5 h-4.5 sm:w-4 sm:h-4" />}
           </Button>
@@ -659,22 +680,22 @@ export default function Home() {
 
                 <div className="space-y-3">
                   <h1 className="text-3xl sm:text-4xl font-light tracking-wide text-foreground font-serif">
-                    {getGreeting()}
+                    {getGreetingText(lang)}
                   </h1>
                   <p className="text-muted-foreground font-light text-lg">
-                    {getWeekdayChinese()}
+                    {getWeekday(lang)}
                   </p>
                 </div>
 
                 <p className="text-muted-foreground/80 font-light text-base max-w-xs leading-relaxed">
-                  花一分钟，温柔地问候自己的内心
+                  {t(lang, 'greeting.subtitle')}
                 </p>
 
                 <Button
                   onClick={handleStart}
                   className="mt-2 sm:mt-4 rounded-full px-8 py-5 sm:py-6 text-base font-light tracking-wider bg-sage hover:bg-sage/90 text-sage-foreground transition-all duration-300 hover:shadow-lg hover:shadow-sage/20 active:scale-95"
                 >
-                  {todayCheckIns.length > 0 ? '再聊一次' : '开始今天'}
+                  {todayCheckIns.length > 0 ? t(lang, 'greeting.chatAgain') : t(lang, 'greeting.startToday')}
                   <ChevronRight className="w-4 h-4 ml-1" />
                 </Button>
 
@@ -689,7 +710,7 @@ export default function Home() {
                     }}
                     className="text-xs text-sage/60 hover:text-sage font-light"
                   >
-                    查看上一次心语
+                    {t(lang, 'greeting.viewLast')}
                   </Button>
                 )}
               </motion.div>
@@ -797,7 +818,7 @@ export default function Home() {
                     className="text-muted-foreground hover:text-foreground font-light h-11 sm:h-9 active:bg-sage/5"
                   >
                     <ArrowLeft className="w-4 h-4 mr-1" />
-                    {step > 0 ? '上一步' : '返回'}
+                    {step > 0 ? t(lang, 'questions.previous') : t(lang, 'questions.back')}
                   </Button>
                 </div>
               </motion.div>
@@ -820,7 +841,7 @@ export default function Home() {
                   </div>
                 </div>
                 <div className="space-y-4">
-                  <p className="text-lg font-light text-foreground">正在倾听你的心声...</p>
+                  <p className="text-lg font-light text-foreground">{t(lang, 'generating.listening')}</p>
                   <div className="flex justify-center gap-1.5 dot-pulse">
                     <span className="w-2 h-2 rounded-full bg-sage/60" />
                     <span className="w-2 h-2 rounded-full bg-sage/60" />
@@ -843,7 +864,7 @@ export default function Home() {
                 {/* Date & time */}
                 <div className="space-y-1">
                   <p className="text-sm font-light text-muted-foreground tracking-wider">
-                    {getWeekdayChinese()}
+                    {getWeekday(lang)}
                   </p>
                 </div>
 
@@ -878,7 +899,7 @@ export default function Home() {
                 >
                   <div className="flex items-center justify-center gap-2 text-sage/70">
                     <Heart className="w-4 h-4" />
-                    <span className="text-sm tracking-widest font-light">给你的话</span>
+                    <span className="text-sm tracking-widest font-light">{t(lang, 'result.wordsForYou')}</span>
                     <Heart className="w-4 h-4" />
                   </div>
                   <p className="text-xl sm:text-2xl font-light text-foreground leading-relaxed font-serif">
@@ -907,7 +928,7 @@ export default function Home() {
                     onClick={handleStart}
                     className="rounded-full px-6 h-11 sm:h-9 font-light tracking-wider bg-sage/80 hover:bg-sage text-sage-foreground transition-all duration-300 active:scale-95"
                   >
-                    再聊一次
+                    {t(lang, 'result.chatAgain')}
                     <ChevronRight className="w-4 h-4 ml-1" />
                   </Button>
                   <Button
@@ -915,11 +936,11 @@ export default function Home() {
                       if (!result) return;
                       setIsGeneratingImage(true);
                       try {
-                        const dataUrl = await generateShareImage(result, getWeekdayChinese());
+                        const dataUrl = await generateShareImage(result, getWeekday(lang), lang);
                         setShareImageUri(dataUrl);
                       } catch (err) {
                         console.error('Share image error:', err);
-                        toast.error('生成图片失败，请稍后再试');
+                        toast.error(t(lang, 'error.imageFailed'));
                       } finally {
                         setIsGeneratingImage(false);
                       }
@@ -930,12 +951,12 @@ export default function Home() {
                     {isGeneratingImage ? (
                       <>
                         <Sparkles className="w-4 h-4 mr-1.5 animate-spin" />
-                        生成中...
+                        {t(lang, 'result.generating')}
                       </>
                     ) : (
                       <>
                         <Download className="w-4 h-4 mr-1.5" />
-                        保存分享图
+                        {t(lang, 'result.saveShare')}
                       </>
                     )}
                   </Button>
@@ -945,7 +966,7 @@ export default function Home() {
                     className="text-muted-foreground hover:text-foreground font-light h-11 sm:h-9 active:bg-sage/5"
                   >
                     <ArrowLeft className="w-4 h-4 mr-1" />
-                    返回
+                    {t(lang, 'result.back')}
                   </Button>
                 </motion.div>
 
@@ -972,14 +993,14 @@ export default function Home() {
                         <div className="max-h-[70vh] overflow-auto">
                           <img
                             src={shareImageUri}
-                            alt="分享卡片"
+                            alt={t(lang, 'result.shareCard')}
                             className="max-w-full rounded-2xl shadow-lg"
                             style={{ maxHeight: '60vh' }}
                           />
                         </div>
 
                         <p className="text-xs text-muted-foreground/60 font-light text-center">
-                          长按图片也可保存到相册
+                          {t(lang, 'result.longPressTip')}
                         </p>
 
                         {/* Action buttons */}
@@ -988,29 +1009,29 @@ export default function Home() {
                             onClick={() => {
                               try {
                                 const link = document.createElement('a');
-                                link.download = `心语_${getWeekdayChinese()}.png`;
+                                link.download = lang === 'en' ? `xinyu_${getWeekday(lang)}.png` : `心语_${getWeekday(lang)}.png`;
                                 link.href = shareImageUri;
                                 document.body.appendChild(link);
                                 link.click();
                                 document.body.removeChild(link);
-                                toast.success('图片已保存');
+                                toast.success(t(lang, 'result.imageSaved'));
                               } catch {
                                 // Fallback for mobile: open in new tab
                                 window.open(shareImageUri, '_blank');
-                                toast.success('请长按图片保存');
+                                toast.success(t(lang, 'result.longPressSave'));
                               }
                             }}
                             className="rounded-full px-6 h-11 font-light tracking-wider bg-sage hover:bg-sage/90 text-sage-foreground transition-all duration-300 active:scale-95"
                           >
                             <Download className="w-4 h-4 mr-1.5" />
-                            保存到相册
+                            {t(lang, 'result.saveToAlbum')}
                           </Button>
                           <Button
                             variant="outline"
                             onClick={() => setShareImageUri(null)}
                             className="rounded-full px-6 h-11 font-light tracking-wider"
                           >
-                            关闭
+                            {t(lang, 'result.close')}
                           </Button>
                         </div>
                       </motion.div>
@@ -1037,9 +1058,9 @@ export default function Home() {
                     className="text-muted-foreground hover:text-foreground font-light -ml-2"
                   >
                     <ArrowLeft className="w-4 h-4 mr-1" />
-                    返回
+                    {t(lang, 'history.back')}
                   </Button>
-                  <h2 className="text-lg font-light text-foreground tracking-wider">心语记录</h2>
+                  <h2 className="text-lg font-light text-foreground tracking-wider">{t(lang, 'history.title')}</h2>
                   <div className="w-16" />
                 </div>
 
@@ -1048,19 +1069,19 @@ export default function Home() {
                   <div className="flex items-center justify-center gap-6 py-3 px-4 rounded-2xl border border-sage/10 bg-sage/[0.03]">
                     <div className="flex items-center gap-1.5">
                       <Users className="w-3.5 h-3.5 text-sage/50" />
-                      <span className="text-xs text-muted-foreground/60 font-light">访问</span>
+                      <span className="text-xs text-muted-foreground/60 font-light">{t(lang, 'history.visits')}</span>
                       <span className="text-sm text-sage/70 font-light">{stats.totalVisitors}</span>
                     </div>
                     <div className="w-px h-3 bg-sage/10" />
                     <div className="flex items-center gap-1.5">
                       <Heart className="w-3.5 h-3.5 text-sage/50" />
-                      <span className="text-xs text-muted-foreground/60 font-light">心语</span>
+                      <span className="text-xs text-muted-foreground/60 font-light">{t(lang, 'history.words')}</span>
                       <span className="text-sm text-sage/70 font-light">{stats.totalCheckIns}</span>
                     </div>
                     <div className="w-px h-3 bg-sage/10" />
                     <div className="flex items-center gap-1.5">
                       <Sun className="w-3.5 h-3.5 text-sage/50" />
-                      <span className="text-xs text-muted-foreground/60 font-light">今日</span>
+                      <span className="text-xs text-muted-foreground/60 font-light">{t(lang, 'history.today')}</span>
                       <span className="text-sm text-sage/70 font-light">{stats.todayVisitors}</span>
                     </div>
                   </div>
@@ -1069,9 +1090,9 @@ export default function Home() {
                 {history.length === 0 ? (
                   <div className="text-center py-16 space-y-4">
                     <Leaf className="w-8 h-8 text-sage/30 mx-auto" />
-                    <p className="text-muted-foreground font-light">还没有记录</p>
+                    <p className="text-muted-foreground font-light">{t(lang, 'history.noRecords')}</p>
                     <p className="text-sm text-muted-foreground/60 font-light">
-                      每一刻都值得被温柔地记住
+                      {t(lang, 'history.everyMoment')}
                     </p>
                   </div>
                 ) : (
@@ -1086,7 +1107,7 @@ export default function Home() {
                       ).map(([date, records]) => (
                         <div key={date} className="space-y-3">
                           <p className="text-sm font-light text-muted-foreground tracking-wider px-1">
-                            {formatDateChinese(date)}
+                            {formatDate(lang, date)}
                           </p>
                           {records.map((record) => (
                             <motion.div
@@ -1129,7 +1150,7 @@ export default function Home() {
       {/* Footer */}
       <footer className="relative z-10 mt-auto py-4 pb-safe text-center">
         <p className="text-xs font-light text-muted-foreground/40 tracking-wider">
-          温柔地对待每一刻
+          {t(lang, 'footer.tagline')}
         </p>
       </footer>
     </div>

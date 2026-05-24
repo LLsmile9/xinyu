@@ -2,14 +2,16 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(req: NextRequest) {
   try {
-    const { answers, previousCheckIns, allPreviousEncouragements } = await req.json();
+    const { answers, previousCheckIns, allPreviousEncouragements, lang } = await req.json();
 
     if (!answers || !Array.isArray(answers) || answers.length === 0) {
       return NextResponse.json(
-        { error: '请完成问题' },
+        { error: lang === 'en' ? 'Please complete the questions' : '请完成问题' },
         { status: 400 }
       );
     }
+
+    const isEn = lang === 'en';
 
     // Format current answers
     const currentAnswers = answers
@@ -19,10 +21,17 @@ export async function POST(req: NextRequest) {
     // Build context for comparison with earlier check-ins today
     let comparisonContext = '';
     if (previousCheckIns && Array.isArray(previousCheckIns) && previousCheckIns.length > 0) {
-      const previousSummaries = previousCheckIns
-        .map((c: { time: string; summary: string }, i: number) => `第${i + 1}次（${c.time}）：${c.summary}`)
-        .join('\n');
-      comparisonContext = `\n\n今天之前的心语记录：\n${previousSummaries}\n\n请在生成总结时，与今天之前的记录做一个温和的对照或呼应，体现出心情的变化轨迹。`;
+      if (isEn) {
+        const previousSummaries = previousCheckIns
+          .map((c: { time: string; summary: string }, i: number) => `#${i + 1} (${c.time}): ${c.summary}`)
+          .join('\n');
+        comparisonContext = `\n\nYour earlier heart word records today:\n${previousSummaries}\n\nWhen generating the summary, make a gentle comparison or echo with the earlier records, reflecting the trajectory of mood changes.`;
+      } else {
+        const previousSummaries = previousCheckIns
+          .map((c: { time: string; summary: string }, i: number) => `第${i + 1}次（${c.time}）：${c.summary}`)
+          .join('\n');
+        comparisonContext = `\n\n今天之前的心语记录：\n${previousSummaries}\n\n请在生成总结时，与今天之前的记录做一个温和的对照或呼应，体现出心情的变化轨迹。`;
+      }
     }
 
     // Build list of previously used philosophers to avoid repetition
@@ -31,10 +40,14 @@ export async function POST(req: NextRequest) {
       const usedList = allPreviousEncouragements
         .map((c: { encouragement: string; book: string }, i: number) => `${i + 1}. ${c.encouragement} | ${c.book}`)
         .join('\n');
-      usedPhilosophersContext = `\n\n【非常重要】以下是该用户之前已经收到过的心语和哲学家，你绝对不能重复使用这些哲学家，必须选择列表中未出现过的其他哲学家：\n${usedList}`;
+      if (isEn) {
+        usedPhilosophersContext = `\n\n[IMPORTANT] Below are the heart words and thinkers the user has already received. You MUST NOT repeat these thinkers. Choose a thinker NOT on this list:\n${usedList}`;
+      } else {
+        usedPhilosophersContext = `\n\n【非常重要】以下是该用户之前已经收到过的心语和哲学家，你绝对不能重复使用这些哲学家，必须选择列表中未出现过的其他哲学家：\n${usedList}`;
+      }
     }
 
-    const systemPrompt = `你是一位温暖而富有洞察力的心灵陪伴者，精通多种心理学流派和东西方哲学。根据用户对五个抽象心理问题的回答，生成三段内容：
+    const systemPromptZh = `你是一位温暖而富有洞察力的心灵陪伴者，精通多种心理学流派和东西方哲学。根据用户对五个抽象心理问题的回答，生成三段内容：
 
 1. 心情总结（summary）：用温柔、诗意、隐喻的语言，概括用户此刻的心理状态。像写一句诗一样，不超过30个中文字。不要用"你"开头，用第三人称或意象来描述。
 
@@ -45,14 +58,37 @@ export async function POST(req: NextRequest) {
 【关键规则】绝对不能重复使用用户之前已经收到过的哲学家！如果用户附上了"已经收到过的心语"列表，你必须从中识别出已使用的哲学家，并选择一位全新的、未出现过的哲学家。只有在所有50位都用完后才允许重复。
 
 可选思想家列表：
-荣格、毛姆、弗兰克尔、阿德勒、马可·奥勒留、王阳明、托尔斯泰、陀思妥耶夫斯基、克尔凯郭尔、传道书/箴言、尼采、加缪、庄子、老子、赫尔曼·黑塞、里里尔克、萨特、弗洛姆、孔子、苏格拉底、柏拉图、亚里士多德、伊壁鸠鲁、塞涅卡、爱比克泰德、蒙田、帕斯卡、卢梭、康德、叔本华、海德格尔、维特根斯坦、波伏娃、汉娜·阿伦特、罗曼·罗兰、纪伯伦、泰戈尔、梭罗、惠特曼、普鲁斯特、卡夫卡、博尔赫斯、三岛由纪夫、川端康成、夏目漱石、鲁迅、林语堂、丰子恺、朱光潜
+荣格、毛姆、弗兰克尔、阿德勒、马可·奥勒留、王阳明、托尔斯泰、陀思妥耶夫斯基、克尔凯郭尔、传道书/箴言、尼采、加缪、庄子、老子、赫尔曼·黑塞、里尔克、萨特、弗洛姆、孔子、苏格拉底、柏拉图、亚里士多德、伊壁鸠鲁、塞涅卡、爱比克泰德、蒙田、帕斯卡、卢梭、康德、叔本华、海德格尔、维特根斯坦、波伏娃、汉娜·阿伦特、罗曼·罗兰、纪伯伦、泰戈尔、梭罗、惠特曼、普鲁斯特、卡夫卡、博尔赫斯、三岛由纪夫、川端康成、夏目漱石、鲁迅、林语堂、丰子恺、朱光潜
 
 3. 推荐书目（book）：推荐这位思想家的一本与当前心境相关的著作，格式为"作者《中文书名》/ Book Title"，不超过30个字。确保书名真实存在。
 
 请严格按以下JSON格式返回，不要包含任何其他文字：
 {"summary": "...", "encouragement": "...", "book": "..."}`;
 
-    const userMessage = `这是我此刻的心理画像：\n${currentAnswers}${comparisonContext}${usedPhilosophersContext}`;
+    const systemPromptEn = `You are a warm and insightful soul companion, well-versed in psychology and Eastern-Western philosophy. Based on the user's answers to five abstract psychological questions, generate three pieces of content:
+
+1. Mood Summary (summary): Use gentle, poetic, metaphorical language to capture the user's current psychological state. Write it like a line of poetry, no more than 25 English words. Do not start with "You" — use third person or imagery instead.
+
+[IMPORTANT] Never simply concatenate or pile up the user's chosen words! For example, if the user chose "Deep Blue" and "Winter", don't write "Deep Blue Winter". Instead, transform them into a poetic image like "A winter lake holds its breath beneath still blue ice." Digest, fuse, and elevate the chosen elements into an entirely new poetic scene or mood.
+
+2. Philosophical Encouragement (encouragement): Select ONE thinker/philosopher from the list below, draw upon or adapt their core ideas, and offer a warm, powerful encouragement. No more than 30 English words. Must include the thinker's name.
+
+[CRITICAL RULE] You MUST NOT repeat any thinker the user has previously received! If the user provides a list of previously received heart words, identify the thinkers already used and choose a completely new one. Only repeat when all 50 have been exhausted.
+
+Available thinkers:
+Carl Jung, Rumi, Viktor Frankl, Marcus Aurelius, Lao Tzu, Thich Nhat Hanh, Kahlil Gibran, Rainer Maria Rilke, Henry David Thoreau, Walt Whitman, Albert Camus, Friedrich Nietzsche, Hermann Hesse, Simone Weil, Meister Eckhart, Pema Chödrön, Alan Watts, Thomas Merton, Mary Oliver, Wendell Berry, Maya Angelou, Seneca, Epictetus, Montaigne, Pascal, Simone de Beauvoir, Hannah Arendt, Romain Rolland, Kierkegaard, Dostoevsky, Tolstoy, Sartre, Fromm, Kafka, Borges, Proust, Murdoch, Emerson, Annie Dillard, Clarissa Pinkola Estés, James Baldwin, Adrienne Rich, W.B. Yeats, T.S. Eliot, Hafiz, Derek Walcott, Louise Glück, Wisława Szymborska, Tagore, Chuang Tzu
+
+3. Book Recommendation (book): Recommend a book by this thinker that relates to the user's current mood. Format: "Author, Book Title". No more than 40 characters. Ensure the book actually exists.
+
+Return strictly in the following JSON format, with no other text:
+{"summary": "...", "encouragement": "...", "book": "..."}`;
+
+    const systemPrompt = isEn ? systemPromptEn : systemPromptZh;
+
+    const userMessageZh = `这是我此刻的心理画像：\n${currentAnswers}${comparisonContext}${usedPhilosophersContext}`;
+    const userMessageEn = `Here is my psychological portrait right now:\n${currentAnswers}${comparisonContext}${usedPhilosophersContext}`;
+
+    const userMessage = isEn ? userMessageEn : userMessageZh;
 
     // Call AI API - support both z-ai-web-dev-sdk (sandbox) and OpenAI-compatible API (production)
     let responseText = '';
@@ -83,7 +119,7 @@ export async function POST(req: NextRequest) {
         const errorBody = await apiResponse.text();
         console.error('AI API error:', apiResponse.status, errorBody);
         return NextResponse.json(
-          { error: 'AI 生成失败，请稍后再试' },
+          { error: isEn ? 'AI generation failed, please try again' : 'AI 生成失败，请稍后再试' },
           { status: 500 }
         );
       }
@@ -106,7 +142,7 @@ export async function POST(req: NextRequest) {
 
     if (!responseText) {
       return NextResponse.json(
-        { error: 'AI 生成失败，请稍后再试' },
+        { error: isEn ? 'AI generation failed, please try again' : 'AI 生成失败，请稍后再试' },
         { status: 500 }
       );
     }
@@ -136,12 +172,28 @@ export async function POST(req: NextRequest) {
         }
       }
       if (!parsed) {
-        parsed = {
-          summary: '风穿过林间，叶子轻轻颤动。',
-          encouragement: '尼采说：每一个不曾起舞的日子，都是对生命的辜负。',
-          book: '尼采《查拉图斯特拉如是说》/ Thus Spoke Zarathustra',
-        };
+        if (isEn) {
+          parsed = {
+            summary: 'Wind moves through the forest, leaves tremble softly.',
+            encouragement: 'Rumi says: The wound is the place where the light enters you.',
+            book: 'Rumi, The Essential Rumi',
+          };
+        } else {
+          parsed = {
+            summary: '风穿过林间，叶子轻轻颤动。',
+            encouragement: '尼采说：每一个不曾起舞的日子，都是对生命的辜负。',
+            book: '尼采《查拉图斯特拉如是说》/ Thus Spoke Zarathustra',
+          };
+        }
       }
+    }
+
+    if (isEn) {
+      return NextResponse.json({
+        summary: parsed.summary || 'Morning light rests gently on the windowsill.',
+        encouragement: parsed.encouragement || 'Camus says: In the depth of winter, I finally learned that within me there lay an invincible summer.',
+        book: parsed.book || 'Camus, The Myth of Sisyphus',
+      });
     }
 
     return NextResponse.json({
